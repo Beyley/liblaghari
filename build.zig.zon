@@ -1,0 +1,16 @@
+.{
+    .name = .laghari,
+    .version = "0.0.0",
+
+    .fingerprint = 0xa720323e7b274428,
+
+    .minimum_zig_version = "0.15.0-dev.77+aa8aa6625",
+
+    .dependencies = .{},
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
