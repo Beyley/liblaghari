@@ -26,4 +26,8 @@ pub const YearDay = struct {
     pub fn totalDays(self: YearDay) i48 {
         return (@as(i48, self.year) * days_per_year) + self.day_index;
     }
+
+    pub fn day(self: YearDay) Day {
+        return self.day_index + 1;
+    }
 };

@@ -1,6 +1,7 @@
 const std = @import("std");
 const epoch = std.time.epoch;
 
+const languages = @import("../languages.zig");
 const anchor = @import("anchor.zig");
 
 pub const Year = i17;
@@ -21,6 +22,33 @@ pub const Month = enum(std.math.IntFittingRange(0, 4)) {
     sihe = 3,
     /// Month 5
     siyem = 4,
+
+    pub fn localizedName(self: Month, language: languages.Language) ?[:0]const u8 {
+        return switch (language) {
+            .solar => switch (self) {
+                .sii => "trihfi",
+                .sitye => "trihtyei",
+                .sichi => "trihtri",
+                .sihe => "trihi",
+                .siyem => "trihyeim",
+            },
+            .martian => switch (self) {
+                .sii => "cih2",
+                .sitye => "cihty2",
+                .sichi => "cihci",
+                .sihe => "cihi",
+                .siyem => "cihy2m",
+            },
+            .neptunian => switch (self) {
+                .sii => "CIFE",
+                .sitye => "CICE",
+                .sichi => "CICI",
+                .sihe => "CIHI",
+                .siyem => "CIYEM",
+            },
+            .future_solar => null, // no data available
+        };
+    }
 };
 
 pub const MonthAndDay = struct {
