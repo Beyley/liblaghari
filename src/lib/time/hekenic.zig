@@ -11,19 +11,19 @@ pub const Day = std.math.IntFittingRange(0, days_per_year - 1); // make it exclu
 pub const days_per_month = 116;
 pub const days_per_year = 116 * 5;
 
-pub const Month = enum(std.math.IntFittingRange(0, 4)) {
+pub const Month = enum {
     /// Month 1
-    sii = 0,
+    sii,
     /// Month 2
-    sitye = 1,
+    sitye,
     /// Month 3
-    sichi = 2,
+    sichi,
     /// Month 4
-    sihe = 3,
+    sihe,
     /// Month 5
-    siyem = 4,
+    siyem,
 
-    pub fn localizedName(self: Month, language: languages.Language) ?[:0]const u8 {
+    pub fn fontName(self: Month, language: languages.Language) ?[:0]const u8 {
         return switch (language) {
             .solar => switch (self) {
                 .sii => "trihfi",
@@ -47,6 +47,7 @@ pub const Month = enum(std.math.IntFittingRange(0, 4)) {
                 .siyem => "CIYEM",
             },
             .future_solar => null, // no data available
+            .@"o'eaiaa" => null, // no data avaialable
         };
     }
 };

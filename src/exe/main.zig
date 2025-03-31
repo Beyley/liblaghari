@@ -3,6 +3,7 @@ const std = @import("std");
 const laghari = @import("laghari");
 const hekenic_time = laghari.time.hekenic;
 const martian_time = laghari.time.martian;
+const @"o'eaiaa_time" = laghari.time.@"o'eaiaa";
 
 const Commands = enum {
     now,
@@ -39,7 +40,7 @@ pub fn main() !void {
 
                     try buffered_stdout.writer().print("{d},{?s},{d}", .{
                         hekenic_year_month_day.year,
-                        hekenic_year_month_day.month.localizedName(language),
+                        hekenic_year_month_day.month.fontName(language),
                         hekenic_year_month_day.day(),
                     });
                 },
@@ -54,6 +55,7 @@ pub fn main() !void {
             try printTestTime(buffered_stdout.writer(), 0);
             try printTestTime(buffered_stdout.writer(), @intCast(std.time.timestamp()));
             try printTestTime(buffered_stdout.writer(), 4316137200);
+            try printTestTime(buffered_stdout.writer(), 4317865200);
             try printTestTime(buffered_stdout.writer(), 13551001200);
             try printTestTime(buffered_stdout.writer(), 1771747200);
         },
@@ -70,8 +72,10 @@ fn printTestTime(writer: anytype, secs: u64) !void {
 
     const hekenic_year_month_day: hekenic_time.YearMonthDay = .fromGregorianEpochDay(epoch_day);
     const martian_year_day: martian_time.YearDay = .fromGregorianEpochDay(epoch_day);
+    const @"o'eaiaa_year_day": @"o'eaiaa_time".YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
     try writer.print("Gregorian: {d}, {s} {d}\n", .{ year_day.year, @tagName(month_day.month), month_day.day_index + 1 });
     try writer.print("Hekenic: {d}, {s} {d}\n", .{ hekenic_year_month_day.year, @tagName(hekenic_year_month_day.month), hekenic_year_month_day.day() });
     try writer.print("Martian: {d}, {d}\n", .{ martian_year_day.year, martian_year_day.day_index + 1 });
+    try writer.print("O'eaiā: {d}, {s} {d}\n\n", .{ @"o'eaiaa_year_day".year, @tagName(@"o'eaiaa_year_day".month), @"o'eaiaa_year_day".day() });
 }

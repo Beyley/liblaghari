@@ -3,4 +3,5 @@ pub const Language = enum {
     martian,
     neptunian,
     future_solar,
+    @"o'eaiaa",
 };
