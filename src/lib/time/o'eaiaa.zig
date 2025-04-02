@@ -6,9 +6,36 @@ const anchor = @import("anchor.zig");
 
 pub const Year = i17;
 
-pub const Day = std.math.IntFittingRange(0, days_per_year - 1); // make it exclusive
+const max_days_per_year = 366;
 
-pub const days_per_year = 364;
+pub const Day = std.math.IntFittingRange(0, 366); // make it exclusive
+
+// source: https://discord.com/channels/1284943477984989258/1289355465658204210/1356301947564593223
+// Video shows alikakaela having 10 days, corrected by ZeWei to be 11 days
+const short_month_days = 11;
+const long_month_days = 59;
+
+pub fn isLeapYear(year: Year) bool {
+    return @rem(year, 4) == 0;
+}
+
+test "leap years" {
+    std.testing.expect(isLeapYear(0));
+    std.testing.expect(isLeapYear(4));
+    std.testing.expect(isLeapYear(2000));
+    std.testing.expect(isLeapYear(-12));
+    std.testing.expect(!isLeapYear(2001));
+    std.testing.expect(!isLeapYear(1));
+    std.testing.expect(!isLeapYear(3));
+    std.testing.expect(!isLeapYear(-2));
+    std.testing.expect(!isLeapYear(-11));
+}
+
+pub fn daysInYear(year: Year) Day {
+    return if (isLeapYear(year)) max_days_per_year else max_days_per_year - 1;
+}
+
+// leap years happen every 4 years, with the last leap year happening on 2105 in the gregorian calendar
 
 pub const Month = enum {
     // month of reverence, holiday
@@ -26,23 +53,48 @@ pub const Month = enum {
     // month 6
     hashasanga,
 
-    pub fn days(self: Month) Day {
+    pub fn days(self: Month, year: Year) Day {
         return switch (self) {
-            .alikakaela => 10,
+            .alikakaela => if (isLeapYear(year)) short_month_days + 1 else short_month_days,
             .angaru,
             .higaama,
             .@"a'aunga",
             .ilizaana,
             .ukuarii,
             .hashasanga,
-            => 59,
+            => long_month_days,
         };
     }
 };
 
 pub const MonthAndDay = struct {
     month: Month,
-    day: Day,
+    day_index: Day,
+
+    pub fn fromDayIndex(day_index: Day, year: Year) MonthAndDay {
+        std.debug.assert(day_index < daysInYear(year));
+
+        var day_total = day_index;
+        var month_index: std.meta.Tag(Month) = 0;
+        for (std.enums.values(Month)) |month| {
+            const days_in_month = month.days(year);
+
+            if (days_in_month > day_total)
+                break;
+
+            day_total -= days_in_month;
+            month_index += 1;
+        }
+
+        return .{
+            .day_index = day_total,
+            .month = @enumFromInt(month_index),
+        };
+    }
+
+    pub fn day(self: MonthAndDay) Day {
+        return self.day_index - 1;
+    }
 };
 
 pub const YearMonthDay = struct {
@@ -51,39 +103,58 @@ pub const YearMonthDay = struct {
     day_index: Day,
 
     pub fn fromGregorianEpochDay(gregorian: epoch.EpochDay) YearMonthDay {
-        // align to the anchor point
-        const days_since_anchor: i48 = @as(i48, gregorian.day) - anchor.@"o'eaiaa".days_from_epoch_to_point + anchor.@"o'eaiaa".time.totalDays();
+        // calculate how many days have passed since the epoch
+        const days_since_anchor: i48 = @as(i48, gregorian.day) - anchor.@"o'eaiaa".days_from_epoch_to_point;
 
-        const year_day_index = @abs(@rem(days_since_anchor, days_per_year));
+        // we are on the anchor day
+        if (days_since_anchor == 0)
+            return anchor.@"o'eaiaa".time;
 
-        const short_month_days = Month.alikakaela.days();
-        const long_month_days = 59;
+        var year: Year = anchor.@"o'eaiaa".time.year;
+        var day_index = days_since_anchor + anchor.@"o'eaiaa".time.yearDayIndex();
 
-        const month: Month, const day_index: u9 =
-            if (year_day_index < short_month_days)
-                .{ .alikakaela, @intCast(year_day_index) }
-            else
-                .{
-                    @enumFromInt(@divFloor(year_day_index - short_month_days, long_month_days) + 1),
-                    @intCast(@mod(year_day_index - short_month_days, long_month_days)),
-                };
+        // future
+        while (day_index >= daysInYear(year)) {
+            day_index -= daysInYear(year);
+            year += 1;
+        }
+
+        // past
+        while (day_index < 0) {
+            year -= 1;
+            day_index += daysInYear(year);
+        }
+
+        const month_and_day: MonthAndDay = .fromDayIndex(@intCast(day_index), year);
 
         return .{
-            .year = @intCast(@divFloor(days_since_anchor, days_per_year)),
-            .month = month,
-            .day_index = day_index,
+            .year = year,
+            .month = month_and_day.month,
+            .day_index = month_and_day.day_index,
         };
     }
 
     pub fn totalDays(self: YearMonthDay) i48 {
+        var year_days: i48 = 0;
+        for (0..@abs(self.year)) |year|
+            year_days += daysInYear(@intCast(year));
+
         var month_days: u47 = 0;
         for (std.enums.values(Month)[0..@intFromEnum(self.month)]) |month|
-            month_days += month.days();
+            month_days += month.days(self.year);
 
-        return self.day_index + month_days + (@as(i48, self.year) * days_per_year);
+        return self.day_index + month_days + year_days;
     }
 
     pub fn day(self: YearMonthDay) Day {
         return self.day_index + 1;
+    }
+
+    pub fn yearDayIndex(self: YearMonthDay) i48 {
+        var month_days: u47 = 0;
+        for (std.enums.values(Month)[0..@intFromEnum(self.month)]) |month|
+            month_days += month.days(self.year);
+
+        return month_days + self.day_index;
     }
 };

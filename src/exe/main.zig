@@ -77,5 +77,8 @@ fn printTestTime(writer: anytype, secs: u64) !void {
     try writer.print("Gregorian: {d}, {s} {d}\n", .{ year_day.year, @tagName(month_day.month), month_day.day_index + 1 });
     try writer.print("Hekenic: {d}, {s} {d}\n", .{ hekenic_year_month_day.year, @tagName(hekenic_year_month_day.month), hekenic_year_month_day.day() });
     try writer.print("Martian: {d}, {d}\n", .{ martian_year_day.year, martian_year_day.day_index + 1 });
-    try writer.print("O'eaiā: {d}, {s} {d}\n\n", .{ @"o'eaiaa_year_day".year, @tagName(@"o'eaiaa_year_day".month), @"o'eaiaa_year_day".day() });
+    try writer.print("O'eaiā: {d}, {s} {d}", .{ @"o'eaiaa_year_day".year, @tagName(@"o'eaiaa_year_day".month), @"o'eaiaa_year_day".day() });
+    if (@"o'eaiaa_time".isLeapYear(@"o'eaiaa_year_day".year))
+        try writer.print(" (leap year!)", .{});
+    try writer.print("\n\n", .{});
 }

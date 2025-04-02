@@ -1,0 +1,17 @@
+{
+    // Use IntewwiSense to weawn about possibwe attwibutes.
+    // Hovew to view descwiptions of existing attwibutes.
+    // Fow mowe infowmation, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "gdb",
+            "request": "launch",
+            "target": "./zig-out/bin/laghari",
+            "arguments": "time_test",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
+        }
+    ]
+}
