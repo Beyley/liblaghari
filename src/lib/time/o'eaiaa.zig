@@ -15,6 +15,7 @@ pub const Day = std.math.IntFittingRange(0, 366); // make it exclusive
 const short_month_days = 11;
 const long_month_days = 59;
 
+// leap years happen every 4 years, with the last leap year happening the O'eaiaa year before the gregorian date 2106, Oct 30
 pub fn isLeapYear(year: Year) bool {
     return @rem(year, 4) == 0;
 }
@@ -34,8 +35,6 @@ test "leap years" {
 pub fn daysInYear(year: Year) Day {
     return if (isLeapYear(year)) max_days_per_year else max_days_per_year - 1;
 }
-
-// leap years happen every 4 years, with the last leap year happening on 2105 in the gregorian calendar
 
 pub const Month = enum {
     // month of reverence, holiday
