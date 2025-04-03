@@ -111,40 +111,58 @@ pub const YearMonthDay = struct {
     }
 };
 
-pub export fn laghariHekenicFromGregorian(gregorian: root.CEpoch, year: *root.CYear, month: *root.CMonth, day: *root.CDay) c_int {
-    if (gregorian > std.math.maxInt(u47)) {
-        return -1;
-    }
-
+pub export fn laghariHekenicYearFromGregorian(gregorian: root.CEpoch) root.CDay {
     const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
 
-    year.* = year_month_day.year;
-    month.* = @intFromEnum(year_month_day.month);
-    day.* = year_month_day.day_index;
-
-    return 0;
+    return year_month_day.year;
 }
 
-pub export fn laghariHekenicToGregorian(year: root.CYear, c_month: root.CMonth, day: root.CDay, gregorian: *root.CEpoch) c_int {
+pub export fn laghariHekenicMonthFromGregorian(gregorian: root.CEpoch) root.CMonth {
+    const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
+
+    return @intFromEnum(year_month_day.month);
+}
+
+pub export fn laghariHekenicDayFromGregorian(gregorian: root.CEpoch) root.CDay {
+    const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
+
+    return year_month_day.day();
+}
+
+pub export fn laghariHekenicMonthDayFromGregorian(gregorian: root.CEpoch) root.CDay {
+    const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
+
+    return year_month_day.day_index + 1;
+}
+
+pub export fn laghariHekenicToGregorianEpoch(year: root.CYear, c_month: root.CMonth, day: root.CDay) root.CEpoch {
     const month = std.meta.intToEnum(Month, c_month) catch return -1;
 
     const year_month_day: YearMonthDay = .{ .day_index = @intCast(day), .month = month, .year = @intCast(year) };
 
-    gregorian.* = year_month_day.toGregorianEpochDay().day;
-
-    return 0;
+    return year_month_day.toGregorianEpochDay().day;
 }
 
-pub export fn laghariHekenicMonthFontName(c_month: root.CMonth, c_language: root.CLanguage, out: *?[*:0]const u8) c_int {
-    const month = std.meta.intToEnum(Month, c_month) catch return -1;
-    const language: languages.Language = std.meta.intToEnum(languages.Language, c_language) catch return -2;
+pub export fn laghariHekenicMonthFontNamePtr(c_month: root.CMonth, c_language: root.CLanguage) ?[*:0]const u8 {
+    const month = std.meta.intToEnum(Month, c_month) catch return null;
+    const language: languages.Language = std.meta.intToEnum(languages.Language, c_language) catch return null;
 
     const font_name = month.fontName(language);
 
     if (font_name) |font_name_slice|
-        out.* = font_name_slice.ptr
+        return font_name_slice.ptr
     else
-        out.* = null;
+        return null;
+}
 
-    return 0;
+pub export fn laghariHekenicMonthFontNameLen(c_month: root.CMonth, c_language: root.CLanguage) i32 {
+    const month = std.meta.intToEnum(Month, c_month) catch return -1;
+    const language: languages.Language = std.meta.intToEnum(languages.Language, c_language) catch return -1;
+
+    const font_name = month.fontName(language);
+
+    if (font_name) |font_name_slice|
+        return @intCast(font_name_slice.len)
+    else
+        return -1;
 }
