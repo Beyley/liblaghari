@@ -10,33 +10,47 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const lib = b.addLibrary(.{
-        .linkage = .static,
-        .name = "laghari",
-        .root_module = lib_mod,
-    });
-    b.installArtifact(lib);
+    if (target.result.cpu.arch == .wasm32 or target.result.cpu.arch == .wasm64) {
+        const wasm_lib = b.addExecutable(.{
+            .name = "laghari",
+            .root_module = lib_mod,
+        });
+        wasm_lib.rdynamic = true;
+        wasm_lib.entry = .disabled;
+        b.installArtifact(wasm_lib);
+    } else {
+        const link_modes: []const std.builtin.LinkMode = &.{ .static, .dynamic };
 
-    const exe_mod = b.createModule(.{
-        .root_source_file = b.path("src/exe/main.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    exe_mod.addImport("laghari", lib_mod);
+        for (link_modes) |link_mode| {
+            const lib = b.addLibrary(.{
+                .linkage = link_mode,
+                .name = "laghari",
+                .root_module = lib_mod,
+            });
+            b.installArtifact(lib);
+        }
 
-    const exe = b.addExecutable(.{
-        .name = "laghari",
-        .root_module = exe_mod,
-    });
-    b.installArtifact(exe);
+        const exe_mod = b.createModule(.{
+            .root_source_file = b.path("src/exe/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        exe_mod.addImport("laghari", lib_mod);
 
-    const run_cmd = b.addRunArtifact(exe);
-    run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+        const exe = b.addExecutable(.{
+            .name = "laghari",
+            .root_module = exe_mod,
+        });
+        b.installArtifact(exe);
+
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+        if (b.args) |args| {
+            run_cmd.addArgs(args);
+        }
+        const run_step = b.step("run", "Run the app");
+        run_step.dependOn(&run_cmd.step);
     }
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
 
     const lib_unit_tests = b.addTest(.{
         .root_module = lib_mod,

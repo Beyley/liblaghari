@@ -2,6 +2,7 @@ const std = @import("std");
 const epoch = std.time.epoch;
 
 const languages = @import("../languages.zig");
+const root = @import("../root.zig");
 const anchor = @import("anchor.zig");
 
 pub const Year = i17;
@@ -95,6 +96,12 @@ pub const YearMonthDay = struct {
         };
     }
 
+    pub fn toGregorianEpochDay(self: YearMonthDay) epoch.EpochDay {
+        const days_since_anchor = self.totalDays() - anchor.hekenic.time.totalDays();
+
+        return .{ .day = @intCast(anchor.hekenic.days_from_epoch_to_point + days_since_anchor) };
+    }
+
     pub fn totalDays(self: YearMonthDay) i48 {
         return self.day_index + (@intFromEnum(self.month) * @as(i48, days_per_month)) + (@as(i48, self.year) * days_per_year);
     }
@@ -103,3 +110,41 @@ pub const YearMonthDay = struct {
         return self.day_index + (@intFromEnum(self.month) * @as(Day, days_per_month)) + 1;
     }
 };
+
+pub export fn laghariHekenicFromGregorian(gregorian: root.CEpoch, year: *root.CYear, month: *root.CMonth, day: *root.CDay) c_int {
+    if (gregorian > std.math.maxInt(u47)) {
+        return -1;
+    }
+
+    const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
+
+    year.* = year_month_day.year;
+    month.* = @intFromEnum(year_month_day.month);
+    day.* = year_month_day.day_index;
+
+    return 0;
+}
+
+pub export fn laghariHekenicToGregorian(year: root.CYear, c_month: root.CMonth, day: root.CDay, gregorian: *root.CEpoch) c_int {
+    const month = std.meta.intToEnum(Month, c_month) catch return -1;
+
+    const year_month_day: YearMonthDay = .{ .day_index = @intCast(day), .month = month, .year = @intCast(year) };
+
+    gregorian.* = year_month_day.toGregorianEpochDay().day;
+
+    return 0;
+}
+
+pub export fn laghariHekenicMonthFontName(c_month: root.CMonth, c_language: root.CLanguage, out: *?[*:0]const u8) c_int {
+    const month = std.meta.intToEnum(Month, c_month) catch return -1;
+    const language: languages.Language = std.meta.intToEnum(languages.Language, c_language) catch return -2;
+
+    const font_name = month.fontName(language);
+
+    if (font_name) |font_name_slice|
+        out.* = font_name_slice.ptr
+    else
+        out.* = null;
+
+    return 0;
+}
