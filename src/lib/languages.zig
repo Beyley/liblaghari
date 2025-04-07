@@ -1,3 +1,7 @@
+const std = @import("std");
+
+const root = @import("root.zig");
+
 pub const Language = enum(u8) {
     solar = 0,
     martian = 1,
@@ -19,3 +23,15 @@ pub const Language = enum(u8) {
         };
     }
 };
+
+pub export fn laghariLanguageEndonymPtr(c_language: root.CLanguage) ?[*:0]const u8 {
+    const language = std.meta.intToEnum(Language, c_language) catch return null;
+
+    return language.endonym().ptr;
+}
+
+pub export fn laghariLanguageEndonymLen(c_language: root.CLanguage) i32 {
+    const language = std.meta.intToEnum(Language, c_language) catch return -1;
+
+    return @intCast(language.endonym().len);
+}
