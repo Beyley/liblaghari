@@ -47,6 +47,13 @@ pub const Month = enum {
                 .sihe => "CIHI",
                 .siyem => "CIYEM",
             },
+            .english => switch (self) {
+                .sii => "Sii",
+                .sitye => "Sitye",
+                .sichi => "Sichi",
+                .sihe => "Sihe",
+                .siyem => "Siyem",
+            },
             .future_solar => null, // no data available
             .@"o'eaiaa" => null, // no data avaialable
         };

@@ -4,4 +4,5 @@ pub const Language = enum(u8) {
     neptunian = 2,
     future_solar = 3,
     @"o'eaiaa" = 4,
+    english = 5,
 };
