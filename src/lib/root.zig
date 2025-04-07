@@ -13,4 +13,5 @@ pub const CLanguage = i32;
 
 comptime {
     _ = time.hekenic;
+    _ = time.martian;
 }

@@ -111,7 +111,7 @@ pub const YearMonthDay = struct {
     }
 };
 
-pub export fn laghariHekenicYearFromGregorian(gregorian: root.CEpoch) root.CDay {
+pub export fn laghariHekenicYearFromGregorian(gregorian: root.CEpoch) root.CYear {
     const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
 
     return year_month_day.year;
