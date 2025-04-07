@@ -55,7 +55,8 @@ pub const Month = enum {
                 .siyem => "Siyem",
             },
             .future_solar => null, // no data available
-            .@"o'eaiaa" => null, // no data avaialable
+            .@"informal_o'eaiaa" => null, // no data avaialable
+            .@"formal_o'eaiaa" => null, // no data avaialable
         };
     }
 };
