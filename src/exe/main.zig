@@ -35,6 +35,7 @@ pub fn main() !void {
             const DateType = enum {
                 hekenic,
                 martian,
+                oeaiaa,
             };
 
             const date_type = std.meta.stringToEnum(DateType, args[2]) orelse return error.UnknownDateType;
@@ -57,6 +58,15 @@ pub fn main() !void {
                     const martian_year_day: martian_time.YearDay = .fromGregorianEpochDay(epoch_day);
 
                     try out.print("{d}, {d}", .{ martian_year_day.year, martian_year_day.day() });
+                },
+                .oeaiaa => {
+                    const year_month_day: @"o'eaiaa_time".YearMonthDay = .fromGregorianEpochDay(epoch_day);
+
+                    try out.print("{d}, {d} {s}", .{
+                        year_month_day.year,
+                        year_month_day.day(),
+                        year_month_day.month.fontName(language) orelse return error.MissingLocalizedName,
+                    });
                 },
             }
         },
@@ -83,7 +93,7 @@ pub fn main() !void {
             try printTestTime(out, raw_epoch_seconds);
             try printTestTime(out, 4316137200);
             try printTestTime(out, 4317865200);
-            try printTestTime(out, 13551001200);
+            try printTestTime(out, 13562294400);
             try printTestTime(out, 1771747200);
         },
     }

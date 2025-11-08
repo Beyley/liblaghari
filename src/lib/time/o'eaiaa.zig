@@ -64,6 +64,43 @@ pub const Month = enum {
             => long_month_days,
         };
     }
+
+    pub fn fontName(self: Month, language: languages.Language) ?[:0]const u8 {
+        return switch (language) {
+            .@"formal_o'eaiaa" => switch (self) {
+                .alikakaela => "TAIKAKKAIAQ",
+                .angaru => "KAUATUU",
+                .higaama => "QIQIAAP",
+                .@"a'aunga" => "PAAUQUAU",
+                .ilizaana => "TIITQAUT",
+                .ukuarii => "KUUATIIK",
+                .hashasanga => "TIAAPQAT",
+            },
+            .@"informal_o'eaiaa" => switch (self) {
+                .alikakaela => "alikakaela",
+                .angaru => "angatu",
+                .higaama => "higaama",
+                .@"a'aunga" => "apaunga",
+                .ilizaana => "ilizaana",
+                .ukuarii => "ukuatii",
+                .hashasanga => "hata:lasanga",
+            },
+            .english => switch (self) {
+                .alikakaela => "Alikakaela",
+                .angaru => "Angaru",
+                .higaama => "Higāma",
+                .@"a'aunga" => "A'aunga",
+                .ilizaana => "Ilizāna",
+                .ukuarii => "Ukuarī",
+                .hashasanga => "Hashasanga",
+            },
+            // no data
+            .solar => null,
+            .martian => null,
+            .neptunian => null,
+            .future_solar => null,
+        };
+    }
 };
 
 pub const MonthAndDay = struct {
