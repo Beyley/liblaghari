@@ -30,12 +30,23 @@ pub fn build(b: *std.Build) void {
             b.installArtifact(lib);
         }
 
+        const exe_c = b.addTranslateC(.{
+            .link_libc = true,
+            .optimize = optimize,
+            .target = target,
+            .root_source_file = b.path("src/exe/c.h"),
+        });
+
         const exe_mod = b.createModule(.{
             .root_source_file = b.path("src/exe/main.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "laghari", .module = lib_mod },
+                .{ .name = "c", .module = exe_c.createModule() },
+            },
         });
-        exe_mod.addImport("laghari", lib_mod);
 
         const exe = b.addExecutable(.{
             .name = "laghari",

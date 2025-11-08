@@ -1,12 +1,15 @@
 const std = @import("std");
 
+const c = @import("c");
 const laghari = @import("laghari");
 const hekenic_time = laghari.time.hekenic;
 const martian_time = laghari.time.martian;
+const babbep_time = laghari.time.babbep;
 const @"o'eaiaa_time" = laghari.time.@"o'eaiaa";
 
 const Commands = enum {
-    now,
+    date,
+    time,
     time_test,
 };
 
@@ -18,11 +21,17 @@ pub fn main() !void {
 
     const command = std.meta.stringToEnum(Commands, args[1]) orelse return error.UnknownCommand;
 
-    const stdout = std.io.getStdOut();
-    var buffered_stdout = std.io.bufferedWriter(stdout.writer());
+    var buf: [1024]u8 = undefined;
+    var stdout_writer_impl = std.fs.File.stdout().writer(&buf);
+    const out = &stdout_writer_impl.interface;
+
+    var t: c.time_t = c.time(null);
+    var lt: c.tm = .{};
+    _ = c.localtime_r(&t, &lt);
+    const raw_epoch_seconds: u64 = @intCast(std.time.timestamp() + lt.tm_gmtoff);
 
     switch (command) {
-        .now => {
+        .date => {
             const DateType = enum {
                 hekenic,
                 martian,
@@ -31,14 +40,14 @@ pub fn main() !void {
             const date_type = std.meta.stringToEnum(DateType, args[2]) orelse return error.UnknownDateType;
             const language = std.meta.stringToEnum(laghari.languages.Language, args[3]) orelse return error.UnknownLanguage;
 
-            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(std.time.timestamp()) };
+            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = raw_epoch_seconds };
             const epoch_day = epoch_seconds.getEpochDay();
 
             switch (date_type) {
                 .hekenic => {
                     const hekenic_year_month_day: hekenic_time.YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
-                    try buffered_stdout.writer().print("{d},{?s},{d}", .{
+                    try out.print("{d},{?s},{d}", .{
                         hekenic_year_month_day.year,
                         hekenic_year_month_day.month.fontName(language),
                         hekenic_year_month_day.day(),
@@ -47,21 +56,39 @@ pub fn main() !void {
                 .martian => {
                     const martian_year_day: martian_time.YearDay = .fromGregorianEpochDay(epoch_day);
 
-                    try buffered_stdout.writer().print("{d}, {d}", .{ martian_year_day.year, martian_year_day.day() });
+                    try out.print("{d}, {d}", .{ martian_year_day.year, martian_year_day.day() });
+                },
+            }
+        },
+        .time => {
+            const ClockType = enum {
+                babbep,
+            };
+
+            const clock_type = std.meta.stringToEnum(ClockType, args[2]) orelse return error.UnknownClockType;
+
+            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = raw_epoch_seconds };
+            const day_seconds = epoch_seconds.getDaySeconds();
+
+            switch (clock_type) {
+                .babbep => {
+                    const day_ttyedde: babbep_time.DayTtyedde = .fromDaySeconds(day_seconds);
+
+                    try out.print("{d}:{d}", .{ day_ttyedde.getDde(), day_ttyedde.getDdeTtyedde() });
                 },
             }
         },
         .time_test => {
-            try printTestTime(buffered_stdout.writer(), 0);
-            try printTestTime(buffered_stdout.writer(), @intCast(std.time.timestamp()));
-            try printTestTime(buffered_stdout.writer(), 4316137200);
-            try printTestTime(buffered_stdout.writer(), 4317865200);
-            try printTestTime(buffered_stdout.writer(), 13551001200);
-            try printTestTime(buffered_stdout.writer(), 1771747200);
+            try printTestTime(out, 0);
+            try printTestTime(out, raw_epoch_seconds);
+            try printTestTime(out, 4316137200);
+            try printTestTime(out, 4317865200);
+            try printTestTime(out, 13551001200);
+            try printTestTime(out, 1771747200);
         },
     }
 
-    try buffered_stdout.flush();
+    try out.flush();
 }
 
 fn printTestTime(writer: anytype, secs: u64) !void {
