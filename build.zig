@@ -36,7 +36,7 @@ pub fn build(b: *std.Build) void {
         }
 
         const exe_mod = b.createModule(.{
-            .root_source_file = b.path("src/exe/main.zig"),
+            .root_source_file = b.path("src/exe/cli.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
@@ -47,7 +47,7 @@ pub fn build(b: *std.Build) void {
         });
 
         const exe = b.addExecutable(.{
-            .name = "laghari",
+            .name = "laghari-cli",
             .root_module = exe_mod,
         });
         b.installArtifact(exe);

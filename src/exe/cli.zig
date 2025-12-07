@@ -12,6 +12,7 @@ const Commands = enum {
     date,
     time,
     time_test,
+    now,
 };
 
 pub fn main() !void {
@@ -23,14 +24,18 @@ pub fn main() !void {
     var env_map = try std.process.getEnvMap(gpa);
     defer env_map.deinit();
 
-    const local_timezone = try zeit.local(gpa, null);
-    defer local_timezone.deinit();
-
-    const command = std.meta.stringToEnum(Commands, args[1]) orelse return error.UnknownCommand;
+    const command =
+        if (args.len < 2)
+            .now
+        else
+            (std.meta.stringToEnum(Commands, args[1]) orelse return error.UnknownCommand);
 
     var buf: [1024]u8 = undefined;
     var stdout_writer_impl = std.fs.File.stdout().writer(&buf);
     const out = &stdout_writer_impl.interface;
+
+    const local_timezone = try zeit.local(gpa, null);
+    defer local_timezone.deinit();
 
     const now_local = try zeit.instant(.{
         .timezone = &local_timezone,
@@ -101,6 +106,47 @@ pub fn main() !void {
             try printTestTime(out, 4317865200);
             try printTestTime(out, 13562294400);
             try printTestTime(out, 1771747200);
+        },
+        .now => {
+            const epoch_day = epoch_seconds.getEpochDay();
+            const hekenic_year_month_day: hekenic_time.YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const martian_year_day: martian_time.YearDay = .fromGregorianEpochDay(epoch_day);
+            const @"o'eaiaa_year_month_day": @"o'eaiaa_time".YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const gregorian_year_day = epoch_day.calculateYearDay();
+            const gregorian_month_day = gregorian_year_day.calculateMonthDay();
+
+            const day_seconds = epoch_seconds.getDaySeconds();
+            const day_ttyedde: babbep_time.DayTtyedde = .fromDaySeconds(day_seconds);
+
+            try out.print("Date:  \t\tYear*\t(Month)\t\tDay\n", .{});
+            try out.print("Gregorian:\t{d}\t{s}\t{d}\n", .{ gregorian_year_day.year, switch (gregorian_month_day.month) {
+                .jan => "January",
+                .feb => "February",
+                .mar => "March",
+                .apr => "April",
+                .may => "May",
+                .jun => "June",
+                .jul => "July",
+                .aug => "August",
+                .sep => "September",
+                .oct => "October",
+                .nov => "November",
+                .dec => "December",
+            }, gregorian_month_day.day_index + 1 });
+            try out.print("Hekenic:\t{d}\t{s}\t\t{d}\n", .{
+                hekenic_year_month_day.year,
+                hekenic_year_month_day.month.fontName(.english) orelse return error.MissingLocalizedName,
+                hekenic_year_month_day.day(),
+            });
+            try out.print("Martian:\t{d}\t\t\t{d}\n", .{ martian_year_day.year, martian_year_day.day() });
+            try out.print("O'eaiā:\t\t{d}\t{s}\t\t{d}\n", .{
+                @"o'eaiaa_year_month_day".year,
+                @"o'eaiaa_year_month_day".month.fontName(.english) orelse return error.MissingLocalizedName,
+                @"o'eaiaa_year_month_day".day(),
+            });
+            try out.print("\n", .{});
+            try out.print("Time:\n", .{});
+            try out.print("Bābbé̬p:\t{d}:{d}\n", .{ day_ttyedde.getDde(), day_ttyedde.getDdeTtyedde() });
         },
     }
 
