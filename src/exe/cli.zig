@@ -34,7 +34,7 @@ pub fn main() !void {
     var stdout_writer_impl = std.fs.File.stdout().writer(&buf);
     const out = &stdout_writer_impl.interface;
 
-    const local_timezone = try zeit.local(gpa, null);
+    const local_timezone = try zeit.local(gpa, &env_map);
     defer local_timezone.deinit();
 
     const now_local = try zeit.instant(.{

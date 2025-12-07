@@ -11,6 +11,9 @@ pub const Day = std.math.IntFittingRange(0, days_per_year - 1); // make it exclu
 
 pub const days_per_month = 116;
 pub const days_per_year = 116 * 5;
+pub const days_per_week = 29;
+
+pub const months_per_year: comptime_int = std.meta.tags(Month).len;
 
 pub const Month = enum {
     /// Month 1
@@ -81,7 +84,7 @@ pub const MonthAndDay = struct {
     pub fn fromYearMonthDay(year_month_day: YearMonthDay) MonthAndDay {
         return .{
             .month = year_month_day.month,
-            .day_index = year_month_day.day_index,
+            .day_index = year_month_day.month_day_index,
         };
     }
 };
@@ -89,7 +92,7 @@ pub const MonthAndDay = struct {
 pub const YearMonthDay = struct {
     year: Year,
     month: Month,
-    day_index: Day,
+    month_day_index: Day,
 
     pub fn fromGregorianEpochDay(gregorian: epoch.EpochDay) YearMonthDay {
         // align to the anchor point
@@ -100,7 +103,7 @@ pub const YearMonthDay = struct {
         return .{
             .year = @intCast(@divFloor(days_since_anchor, days_per_year)),
             .month = month_and_day.month,
-            .day_index = month_and_day.day_index,
+            .month_day_index = month_and_day.day_index,
         };
     }
 
@@ -111,11 +114,11 @@ pub const YearMonthDay = struct {
     }
 
     pub fn totalDays(self: YearMonthDay) i48 {
-        return self.day_index + (@intFromEnum(self.month) * @as(i48, days_per_month)) + (@as(i48, self.year) * days_per_year);
+        return self.month_day_index + (@intFromEnum(self.month) * @as(i48, days_per_month)) + (@as(i48, self.year) * days_per_year);
     }
 
     pub fn day(self: YearMonthDay) Day {
-        return self.day_index + (@intFromEnum(self.month) * @as(Day, days_per_month)) + 1;
+        return self.month_day_index + (@intFromEnum(self.month) * @as(Day, days_per_month)) + 1;
     }
 };
 
@@ -140,13 +143,13 @@ pub export fn laghariHekenicDayFromGregorian(gregorian: root.CEpoch) root.CDay {
 pub export fn laghariHekenicMonthDayFromGregorian(gregorian: root.CEpoch) root.CDay {
     const year_month_day: YearMonthDay = .fromGregorianEpochDay(.{ .day = @intCast(gregorian) });
 
-    return year_month_day.day_index + 1;
+    return year_month_day.month_day_index + 1;
 }
 
 pub export fn laghariHekenicToGregorianEpoch(year: root.CYear, c_month: root.CMonth, day: root.CDay) root.CEpoch {
     const month = std.meta.intToEnum(Month, c_month) catch return -1;
 
-    const year_month_day: YearMonthDay = .{ .day_index = @intCast(day), .month = month, .year = @intCast(year) };
+    const year_month_day: YearMonthDay = .{ .month_day_index = @intCast(day), .month = month, .year = @intCast(year) };
 
     return year_month_day.toGregorianEpochDay().day;
 }

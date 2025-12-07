@@ -11,6 +11,10 @@
             .url = "git+https://github.com/rockorager/zeit#b01d40568edc0b1c1a2ec0692619449a2a39c718",
             .hash = "zeit-0.6.0-5I6bk05_AgAUb00ViMy0zAkEf4N38JCSUUrjCW4s-haJ",
         },
+        .dvui = .{
+            .url = "git+https://github.com/david-vanderson/dvui#5a292ca7f70d43c81a1e4b5748338139b852aac7",
+            .hash = "dvui-0.4.0-dev-AQFJmbn72QBXvnNnPx1OIhbL0YVOKcjf5GVkY4mubr_d",
+        },
     },
 
     .paths = .{

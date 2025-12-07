@@ -9,6 +9,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).module("zeit");
 
+    const dvui_dep = b.dependency("dvui", .{ .target = target, .optimize = optimize, .backend = .sdl3 });
+
     const lib_mod = b.createModule(.{
         .root_source_file = b.path("src/lib/root.zig"),
         .target = target,
@@ -35,7 +37,7 @@ pub fn build(b: *std.Build) void {
             b.installArtifact(lib);
         }
 
-        const exe_mod = b.createModule(.{
+        const cli_mod = b.createModule(.{
             .root_source_file = b.path("src/exe/cli.zig"),
             .target = target,
             .optimize = optimize,
@@ -46,19 +48,45 @@ pub fn build(b: *std.Build) void {
             },
         });
 
-        const exe = b.addExecutable(.{
+        const cli = b.addExecutable(.{
             .name = "laghari-cli",
-            .root_module = exe_mod,
+            .root_module = cli_mod,
         });
-        b.installArtifact(exe);
+        b.installArtifact(cli);
 
-        const run_cmd = b.addRunArtifact(exe);
-        run_cmd.step.dependOn(b.getInstallStep());
+        const run_cli_cmd = b.addRunArtifact(cli);
+        run_cli_cmd.step.dependOn(b.getInstallStep());
         if (b.args) |args| {
-            run_cmd.addArgs(args);
+            run_cli_cmd.addArgs(args);
         }
         const run_step = b.step("run", "Run the app");
-        run_step.dependOn(&run_cmd.step);
+        run_step.dependOn(&run_cli_cmd.step);
+
+        const gui_mod = b.createModule(.{
+            .root_source_file = b.path("src/exe/gui.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "laghari", .module = lib_mod },
+                .{ .name = "zeit", .module = zeit_mod },
+                .{ .name = "dvui", .module = dvui_dep.module("dvui_sdl3") },
+            },
+        });
+
+        const gui = b.addExecutable(.{
+            .name = "laghari-calendars",
+            .root_module = gui_mod,
+        });
+        b.installArtifact(gui);
+
+        const run_gui_cmd = b.addRunArtifact(gui);
+        run_gui_cmd.step.dependOn(b.getInstallStep());
+        if (b.args) |args| {
+            run_gui_cmd.addArgs(args);
+        }
+        const run_gui_step = b.step("gui", "Run the app");
+        run_gui_step.dependOn(&run_gui_cmd.step);
     }
 
     const lib_unit_tests = b.addTest(.{
