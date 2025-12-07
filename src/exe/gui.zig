@@ -60,7 +60,7 @@ pub fn init(win: *dvui.Window) !void {
         errdefer local_timezone.deinit();
 
         const now = try zeit.instant(.{ .timezone = &local_timezone });
-        const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now.unixTimestamp()) };
+        const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now.timezone.adjust(now.unixTimestamp()).timestamp) };
         const epoch_day = epoch_seconds.getEpochDay();
         const now_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
