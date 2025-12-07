@@ -41,7 +41,7 @@ pub fn main() !void {
         .timezone = &local_timezone,
     });
 
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now_local.unixTimestamp()) };
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now_local.timezone.adjust(now_local.unixTimestamp()).timestamp) };
 
     switch (command) {
         .date => {
