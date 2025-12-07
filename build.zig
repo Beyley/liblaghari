@@ -4,6 +4,11 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const zeit_mod = b.dependency("zeit", .{
+        .target = target,
+        .optimize = optimize,
+    }).module("zeit");
+
     const lib_mod = b.createModule(.{
         .root_source_file = b.path("src/lib/root.zig"),
         .target = target,
@@ -30,13 +35,6 @@ pub fn build(b: *std.Build) void {
             b.installArtifact(lib);
         }
 
-        const exe_c = b.addTranslateC(.{
-            .link_libc = true,
-            .optimize = optimize,
-            .target = target,
-            .root_source_file = b.path("src/exe/c.h"),
-        });
-
         const exe_mod = b.createModule(.{
             .root_source_file = b.path("src/exe/main.zig"),
             .target = target,
@@ -44,7 +42,7 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
             .imports = &.{
                 .{ .name = "laghari", .module = lib_mod },
-                .{ .name = "c", .module = exe_c.createModule() },
+                .{ .name = "zeit", .module = zeit_mod },
             },
         });
 

@@ -6,7 +6,12 @@
 
     .minimum_zig_version = "0.15.0-dev.77+aa8aa6625",
 
-    .dependencies = .{},
+    .dependencies = .{
+        .zeit = .{
+            .url = "git+https://github.com/rockorager/zeit#b01d40568edc0b1c1a2ec0692619449a2a39c718",
+            .hash = "zeit-0.6.0-5I6bk05_AgAUb00ViMy0zAkEf4N38JCSUUrjCW4s-haJ",
+        },
+    },
 
     .paths = .{
         "build.zig",

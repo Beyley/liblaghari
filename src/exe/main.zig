@@ -6,6 +6,7 @@ const hekenic_time = laghari.time.hekenic;
 const martian_time = laghari.time.martian;
 const babbep_time = laghari.time.babbep;
 const @"o'eaiaa_time" = laghari.time.@"o'eaiaa";
+const zeit = @import("zeit");
 
 const Commands = enum {
     date,
@@ -19,16 +20,23 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(gpa);
     defer std.process.argsFree(gpa, args);
 
+    var env_map = try std.process.getEnvMap(gpa);
+    defer env_map.deinit();
+
+    const local_timezone = try zeit.local(gpa, null);
+    defer local_timezone.deinit();
+
     const command = std.meta.stringToEnum(Commands, args[1]) orelse return error.UnknownCommand;
 
     var buf: [1024]u8 = undefined;
     var stdout_writer_impl = std.fs.File.stdout().writer(&buf);
     const out = &stdout_writer_impl.interface;
 
-    var t: c.time_t = c.time(null);
-    var lt: c.tm = .{};
-    _ = c.localtime_r(&t, &lt);
-    const raw_epoch_seconds: u64 = @intCast(std.time.timestamp() + lt.tm_gmtoff);
+    const now_local = try zeit.instant(.{
+        .timezone = &local_timezone,
+    });
+
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now_local.unixTimestamp()) };
 
     switch (command) {
         .date => {
@@ -41,7 +49,6 @@ pub fn main() !void {
             const date_type = std.meta.stringToEnum(DateType, args[2]) orelse return error.UnknownDateType;
             const language = std.meta.stringToEnum(laghari.languages.Language, args[3]) orelse return error.UnknownLanguage;
 
-            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = raw_epoch_seconds };
             const epoch_day = epoch_seconds.getEpochDay();
 
             switch (date_type) {
@@ -77,7 +84,6 @@ pub fn main() !void {
 
             const clock_type = std.meta.stringToEnum(ClockType, args[2]) orelse return error.UnknownClockType;
 
-            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = raw_epoch_seconds };
             const day_seconds = epoch_seconds.getDaySeconds();
 
             switch (clock_type) {
@@ -90,7 +96,7 @@ pub fn main() !void {
         },
         .time_test => {
             try printTestTime(out, 0);
-            try printTestTime(out, raw_epoch_seconds);
+            try printTestTime(out, epoch_seconds.secs);
             try printTestTime(out, 4316137200);
             try printTestTime(out, 4317865200);
             try printTestTime(out, 13562294400);
