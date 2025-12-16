@@ -10,6 +10,21 @@ const hekenic = laghari.time.hekenic;
 const zeit = @import("zeit");
 
 const calendars = @import("calendars/calendars.zig");
+const colors = @import("colors.zig");
+
+const lato_light_family = "Lato Light";
+const lato_regular_family = "Lato Regular";
+
+const fonts: []const dvui.Font.Source = &.{
+    .{
+        .family = dvui.Font.array(lato_light_family),
+        .bytes = @embedFile("fonts/Lato/Lato-Light.ttf"),
+    },
+    .{
+        .family = dvui.Font.array(lato_regular_family),
+        .bytes = @embedFile("fonts/Lato/Lato-Regular.ttf"),
+    },
+};
 
 pub const dvui_app: dvui.App = .{
     .config = .{
@@ -21,6 +36,32 @@ pub const dvui_app: dvui.App = .{
             .window_init_options = .{
                 // Could set a default theme here
                 // .theme = dvui.Theme.builtin.dracula,
+                .theme = .{
+                    .name = "Laghari Portals",
+                    .dark = true,
+
+                    .embedded_fonts = fonts,
+
+                    .font_body = .find(.{ .family = lato_light_family, .size = 20 }),
+                    .font_heading = .find(.{ .family = lato_regular_family }),
+                    .font_title = .find(.{ .family = lato_regular_family, .size = 40 }),
+                    .font_mono = .find(.{ .family = lato_light_family }), // todo
+
+                    .fill = .black,
+                    .text = colors.laghari,
+                    .border = colors.laghari,
+                    .focus = .gray,
+
+                    .control = .{
+                        .fill = .black,
+                        .fill_hover = colors.laghari,
+
+                        .border = colors.laghari,
+
+                        .text = colors.laghari,
+                        .text_hover = .black,
+                    },
+                },
             },
             .vsync = true,
         },
@@ -101,10 +142,10 @@ pub fn init(win: *dvui.Window) !void {
     // try dvui.addFont("NOTO", @embedFile("../src/fonts/NotoSansKR-Regular.ttf"), null);
 
     // Or opt-in to adding the fonts for the builin themes...
-    try win.fonts.addBuiltinFontsForTheme(win.gpa, dvui.Theme.builtin.adwaita_light);
+    // try win.fonts.addBuiltinFontsForTheme(win.gpa, dvui.Theme.builtin.adwaita_light);
 
     // Or add other builtin fonts
-    try win.fonts.addBuiltinFonts(win.gpa, &.{.Vera});
+    // try win.fonts.addBuiltinFonts(win.gpa, &.{.Vera});
 
     if (false) {
         // If you need to set a theme based on the users preferred color scheme, do it here
