@@ -11,6 +11,7 @@ pub const DayInfo = struct {
     last_day_in_row: bool,
     normal_colour: dvui.Color,
     highlighted_colour: dvui.Color,
+    text_colour: dvui.Color,
 
     pub fn isDay(self: DayInfo, other: epoch.EpochDay) bool {
         return self.epoch_day.day == other.day;
@@ -44,5 +45,6 @@ pub fn day(state: State, day_info: DayInfo, comptime format: [:0]const u8, args:
 
     dvui.label(@src(), format, args, .{
         .style = .content,
+        .color_text = day_info.text_colour,
     });
 }

@@ -8,14 +8,17 @@ const colors = @import("../colors.zig");
 const State = @import("../gui.zig").State;
 const shared = @import("shared.zig");
 
-pub fn frame(state: State) !void {
+pub fn title(state: State) !void {
     dvui.label(@src(), "{s}", .{
         state.now.hekenic.month.fontNameSafe(.english),
     }, .{
         // .font_style = .title,
         .font = dvui.themeGet().font_title,
+        .color_text = colors.laghari,
     });
+}
 
+pub fn frame(state: State) !void {
     const year_start_epoch_day = state.now.hekenic.yearStart().toGregorianEpochDay();
 
     for (0..@divExact(hekenic.days_per_month, hekenic.days_per_week)) |week_index| {
@@ -38,6 +41,7 @@ pub fn frame(state: State) !void {
                 .last_day_in_row = week_day_index == hekenic.days_per_week - 1,
                 .normal_colour = colors.slight_solar_highlight,
                 .highlighted_colour = colors.strong_solar_highlight,
+                .text_colour = colors.laghari,
             }, "{d}", .{day_index + 1});
         }
         // }

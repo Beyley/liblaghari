@@ -1,7 +1,7 @@
 const dvui = @import("dvui");
 
 pub const laghari: dvui.Color = .fromHex("#FEDA69");
-pub const bright: dvui.Color = .fromHex("#DDDDDD");
+pub const bright: dvui.Color = .fromHex("#DBDBDB");
 
 pub const slight_highlight: dvui.Color = .fromHex("#FEDA6915");
 pub const strong_highlight: dvui.Color = .fromHex("#FEDA6950");
