@@ -1,4 +1,5 @@
 const std = @import("std");
+const epoch = std.time.epoch;
 const builtin = @import("builtin");
 
 const dvui = @import("dvui");
@@ -7,6 +8,8 @@ pub const panic = dvui.App.panic;
 const laghari = @import("laghari");
 const hekenic = laghari.time.hekenic;
 const zeit = @import("zeit");
+
+const calendars = @import("calendars/calendars.zig");
 
 pub const dvui_app: dvui.App = .{
     .config = .{
@@ -41,13 +44,35 @@ var orig_content_scale: f32 = 1.0;
 var warn_on_quit: bool = false;
 var warn_on_quit_closing: bool = false;
 
-var state_init: bool = false;
-var state: struct {
+pub const State = struct {
+    pub const Now = struct {
+        instant: zeit.Instant,
+        epoch_seconds: epoch.EpochSeconds,
+        epoch_day: epoch.EpochDay,
+        hekenic: hekenic.YearMonthDay,
+
+        pub fn fromInstant(instant: zeit.Instant) Now {
+            const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(instant.timezone.adjust(instant.unixTimestamp()).timestamp) };
+            const epoch_day = epoch_seconds.getEpochDay();
+            const instant_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
+
+            return .{
+                .instant = instant,
+                .epoch_seconds = epoch_seconds,
+                .epoch_day = epoch_day,
+                .hekenic = instant_hekenic,
+            };
+        }
+    };
+
     env_map: std.process.EnvMap,
     local_timezone: zeit.TimeZone,
-    now: zeit.Instant,
-    now_hekenic: hekenic.YearMonthDay,
-} = undefined;
+
+    now: Now,
+};
+
+var state_init: bool = false;
+var state: State = undefined;
 
 // Runs before the first frame, after backend and dvui.Window.init()
 // - runs between win.begin()/win.end()
@@ -60,15 +85,12 @@ pub fn init(win: *dvui.Window) !void {
         errdefer local_timezone.deinit();
 
         const now = try zeit.instant(.{ .timezone = &local_timezone });
-        const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now.timezone.adjust(now.unixTimestamp()).timestamp) };
-        const epoch_day = epoch_seconds.getEpochDay();
-        const now_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
         state = .{
             .env_map = env_map,
             .local_timezone = local_timezone,
-            .now = now,
-            .now_hekenic = now_hekenic,
+
+            .now = .fromInstant(now),
         };
 
         state_init = true;
@@ -153,6 +175,7 @@ pub fn frame() !dvui.App.Result {
     defer scroll.deinit();
 
     const corner_radius: dvui.Rect = .all(5);
+    _ = corner_radius; // autofix
 
     {
         var vbox = dvui.box(@src(), .{}, .{
@@ -163,49 +186,49 @@ pub fn frame() !dvui.App.Result {
         });
         defer vbox.deinit();
 
-        dvui.label(@src(), "{s}", .{state.now_hekenic.month.fontName(.english).?}, .{
-            .font_style = .title,
-        });
+        try calendars.hekenic.frame(state);
 
-        for (0..(hekenic.days_per_month / hekenic.days_per_week)) |week_index| {
-            var box = dvui.flexbox(@src(), .{
-                .justify_content = .center,
-            }, .{
-                .id_extra = week_index,
-                .padding = .all(4),
-            });
-            defer box.deinit();
+        // dvui.label(@src(), "{s}", .{state.now_hekenic.month.fontName(.english).?}, .{
+        //     .font_style = .title,
+        // });
 
-            const day_size: dvui.Size = .{ .w = 65, .h = 65 };
+        // for (0..(hekenic.days_per_month / hekenic.days_per_week)) |week_index| {
+        //     var box = dvui.flexbox(@src(), .{
+        //         .justify_content = .center,
+        //     }, .{
+        //         .id_extra = week_index,
+        //         .padding = .all(4),
+        //     });
+        //     defer box.deinit();
 
-            // for (0..hekenic.months_per_year) |month| {
-            for (0..hekenic.days_per_week) |week_day_index| {
-                const day_index = @as(usize, @intFromEnum(state.now_hekenic.month)) * hekenic.days_per_month + week_index * hekenic.days_per_week + week_day_index;
-                const now_day_index = state.now_hekenic.day() - 1;
+        //     // for (0..hekenic.months_per_year) |month| {
+        //     for (0..hekenic.days_per_week) |week_day_index| {
+        //         const day_index = @as(usize, @intFromEnum(state.now_hekenic.month)) * hekenic.days_per_month + week_index * hekenic.days_per_week + week_day_index;
+        //         const now_day_index = state.now_hekenic.day() - 1;
 
-                var day_box = dvui.box(@src(), .{}, .{
-                    .id_extra = day_index,
+        //         var day_box = dvui.box(@src(), .{}, .{
+        //             .id_extra = day_index,
 
-                    .margin = .all(4),
-                    .padding = .all(4),
+        //             .margin = .all(4),
+        //             .padding = .all(4),
 
-                    .min_size_content = day_size,
-                    .max_size_content = .size(day_size),
+        //             .min_size_content = day_size,
+        //             .max_size_content = .size(day_size),
 
-                    .color_fill = if (day_index == now_day_index) .gray else dvui.Color.gray.lighten(-50),
+        //             .color_fill = if (day_index == now_day_index) .gray else dvui.Color.gray.lighten(-50),
 
-                    .corner_radius = corner_radius,
+        //             .corner_radius = corner_radius,
 
-                    .background = true,
-                });
-                defer day_box.deinit();
+        //             .background = true,
+        //         });
+        //         defer day_box.deinit();
 
-                dvui.label(@src(), "{d}", .{day_index + 1}, .{
-                    .style = .content,
-                });
-            }
-            // }
-        }
+        //         dvui.label(@src(), "{d}", .{day_index + 1}, .{
+        //             .style = .content,
+        //         });
+        //     }
+        //     // }
+        // }
     }
 
     // {

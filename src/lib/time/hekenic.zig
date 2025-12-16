@@ -27,6 +27,10 @@ pub const Month = enum {
     /// Month 5
     siyem,
 
+    pub fn fontNameSafe(self: Month, language: languages.Language) [:0]const u8 {
+        return self.fontName(language) orelse @tagName(self);
+    }
+
     pub fn fontName(self: Month, language: languages.Language) ?[:0]const u8 {
         return switch (language) {
             .solar => switch (self) {
@@ -111,6 +115,22 @@ pub const YearMonthDay = struct {
         const days_since_anchor = self.totalDays() - anchor.hekenic.time.totalDays();
 
         return .{ .day = @intCast(anchor.hekenic.days_from_epoch_to_point + days_since_anchor) };
+    }
+
+    pub fn yearStart(self: YearMonthDay) YearMonthDay {
+        return .{
+            .year = self.year,
+            .month = .sii,
+            .month_day_index = 0,
+        };
+    }
+
+    pub fn monthStart(self: YearMonthDay) YearMonthDay {
+        return .{
+            .year = self.year,
+            .month = self.month,
+            .month_day_index = 0,
+        };
     }
 
     pub fn totalDays(self: YearMonthDay) i48 {
