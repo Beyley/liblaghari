@@ -37,11 +37,19 @@ pub fn main() !void {
     const local_timezone = try zeit.local(gpa, &env_map);
     defer local_timezone.deinit();
 
+    const babbep_timezone: zeit.TimeZone = .{
+        .fixed = .{
+            .name = "Babbep Local Time",
+            .is_dst = false,
+            .offset = -((5 * 60) + 14) * 60, // 5:14am is sunrise at summer solstice
+        },
+    };
+
     const now_local = try zeit.instant(.{
         .timezone = &local_timezone,
     });
 
-    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(now_local.timezone.adjust(now_local.unixTimestamp()).timestamp) };
+    const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(babbep_timezone.adjust(now_local.timezone.adjust(now_local.unixTimestamp()).timestamp).timestamp) };
 
     switch (command) {
         .date => {
@@ -119,30 +127,36 @@ pub fn main() !void {
             const day_ttyedde: babbep_time.DayTtyedde = .fromDaySeconds(day_seconds);
 
             try out.print("Date:  \t\tYear*\t(Month)\t\tDay\n", .{});
-            try out.print("Gregorian:\t{d}\t{s}\t{d}\n", .{ gregorian_year_day.year, switch (gregorian_month_day.month) {
-                .jan => "January",
-                .feb => "February",
-                .mar => "March",
-                .apr => "April",
-                .may => "May",
-                .jun => "June",
-                .jul => "July",
-                .aug => "August",
-                .sep => "September",
-                .oct => "October",
-                .nov => "November",
-                .dec => "December",
-            }, gregorian_month_day.day_index + 1 });
+            try out.print("Gregorian:\t{d}\t{s}\t{d}\t{s}\n", .{
+                gregorian_year_day.year,
+                switch (gregorian_month_day.month) {
+                    .jan => "January",
+                    .feb => "February",
+                    .mar => "March",
+                    .apr => "April",
+                    .may => "May",
+                    .jun => "June",
+                    .jul => "July",
+                    .aug => "August",
+                    .sep => "September",
+                    .oct => "October",
+                    .nov => "November",
+                    .dec => "December",
+                },
+                gregorian_month_day.day_index + 1,
+                if (std.time.epoch.isLeapYear(gregorian_year_day.year)) "(Leap Year!)" else "",
+            });
             try out.print("Hekenic:\t{d}\t{s}\t\t{d}\n", .{
                 hekenic_year_month_day.year,
                 hekenic_year_month_day.month.fontName(.english) orelse return error.MissingLocalizedName,
                 hekenic_year_month_day.day(),
             });
             try out.print("Martian:\t{d}\t\t\t{d}\n", .{ martian_year_day.year, martian_year_day.day() });
-            try out.print("O'eaiā:\t\t{d}\t{s}\t\t{d}\n", .{
+            try out.print("O'eaiā:\t\t{d}\t{s}\t\t{d}\t{s}\n", .{
                 @"o'eaiaa_year_month_day".year,
                 @"o'eaiaa_year_month_day".month.fontName(.english) orelse return error.MissingLocalizedName,
                 @"o'eaiaa_year_month_day".day(),
+                if (@"o'eaiaa_time".isLeapYear(@"o'eaiaa_year_month_day".year)) "(Leap Year!)" else "",
             });
             try out.print("\n", .{});
             try out.print("Time:\n", .{});
