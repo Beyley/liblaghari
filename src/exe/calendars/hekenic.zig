@@ -22,14 +22,7 @@ pub fn frame(state: State) !void {
     const year_start_epoch_day = state.now.hekenic.yearStart().toGregorianEpochDay();
 
     for (0..@divExact(hekenic.days_per_month, hekenic.days_per_week)) |week_index| {
-        const border: dvui.Rect = .all(1);
-        var box = dvui.flexbox(@src(), .{
-            .justify_content = .start,
-            .border_collapse = border.topLeft(),
-        }, .{
-            .id_extra = week_index,
-            .margin = .all(4),
-        });
+        var box = shared.week(week_index);
         defer box.deinit();
 
         // for (0..hekenic.months_per_year) |month| {
@@ -40,11 +33,11 @@ pub fn frame(state: State) !void {
 
             try shared.day(state, .{
                 .epoch_day = .{ .day = @intCast(year_start_epoch_day.day + day_index) },
-                .last_day_in_row = week_day_index == hekenic.days_per_week - 1,
                 .normal_colour = colors.slight_solar_highlight,
                 .highlighted_colour = colors.strong_solar_highlight,
                 .text_colour = colors.laghari,
                 .flexbox = box,
+                .week_index = week_index,
             }, "{d}", .{day_index + 1});
         }
         // }

@@ -8,10 +8,10 @@ const State = @import("../gui.zig").State;
 
 pub const DayInfo = struct {
     epoch_day: epoch.EpochDay,
-    last_day_in_row: bool,
     normal_colour: dvui.Color,
     highlighted_colour: dvui.Color,
     text_colour: dvui.Color,
+    week_index: usize,
 
     flexbox: *dvui.FlexBoxWidget,
 
@@ -21,6 +21,18 @@ pub const DayInfo = struct {
 };
 
 const day_size: dvui.Size = .{ .w = 65, .h = 65 };
+
+pub fn week(week_index: usize) *dvui.FlexBoxWidget {
+    const border: dvui.Rect = .all(1);
+
+    return dvui.flexbox(@src(), .{
+        .justify_content = .start,
+        .border_collapse = border.topLeft(),
+    }, .{
+        .id_extra = week_index,
+        .margin = .all(4),
+    });
+}
 
 pub fn day(
     state: State,
@@ -37,7 +49,7 @@ pub fn day(
         if (day_info.isDay(state.now.epoch_day))
             day_info.highlighted_colour
         else
-            (if ((day_info.flexbox.col + day_info.flexbox.row) % 2 == 0)
+            (if ((day_info.flexbox.col + day_info.flexbox.row + day_info.week_index) % 2 == 0)
                 day_info.normal_colour
             else
                 .transparent);

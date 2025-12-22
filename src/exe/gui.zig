@@ -7,6 +7,7 @@ pub const main = dvui.App.main;
 pub const panic = dvui.App.panic;
 const laghari = @import("laghari");
 const hekenic = laghari.time.hekenic;
+const @"o'eaiaa" = laghari.time.@"o'eaiaa";
 const zeit = @import("zeit");
 
 const calendars = @import("calendars/calendars.zig");
@@ -91,17 +92,20 @@ pub const State = struct {
         epoch_seconds: epoch.EpochSeconds,
         epoch_day: epoch.EpochDay,
         hekenic: hekenic.YearMonthDay,
+        @"o'eaiaa": @"o'eaiaa".YearMonthDay,
 
         pub fn fromInstant(instant: zeit.Instant) Now {
             const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(instant.timezone.adjust(instant.unixTimestamp()).timestamp) };
             const epoch_day = epoch_seconds.getEpochDay();
             const instant_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const @"instant_o'eaiaa": @"o'eaiaa".YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
             return .{
                 .instant = instant,
                 .epoch_seconds = epoch_seconds,
                 .epoch_day = epoch_day,
                 .hekenic = instant_hekenic,
+                .@"o'eaiaa" = @"instant_o'eaiaa",
             };
         }
     };
@@ -245,6 +249,7 @@ pub fn frame() !dvui.App.Result {
         defer vbox.deinit();
 
         {
+            // try calendars.@"o'eaiaa".title(state);
             try calendars.hekenic.title(state);
         }
 
@@ -260,6 +265,7 @@ pub fn frame() !dvui.App.Result {
             });
             defer calendar_scroll.deinit();
 
+            // try calendars.@"o'eaiaa".frame(state);
             try calendars.hekenic.frame(state);
         }
     }

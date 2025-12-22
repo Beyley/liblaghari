@@ -33,5 +33,5 @@ pub const @"o'eaiaa" = struct {
         std.debug.assert(@mod(time.year + leap_year_relative_to_anchor, 4) == 0);
     }
 
-    pub const time: @"epoch_o'eaiaa".YearMonthDay = .{ .year = -leap_year_relative_to_anchor + 136, .month = .@"a'aunga", .day_index = 8 - 1 }; // -1 for day -> index
+    pub const time: @"epoch_o'eaiaa".YearMonthDay = .{ .year = -leap_year_relative_to_anchor + 136, .month = .@"a'aunga", .month_day_index = 8 - 1 }; // -1 for day -> index
 };

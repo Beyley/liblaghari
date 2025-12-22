@@ -65,6 +65,10 @@ pub const Month = enum {
         };
     }
 
+    pub fn fontNameSafe(self: Month, language: languages.Language) [:0]const u8 {
+        return self.fontName(language) orelse self.fontName(.english) orelse @tagName(self);
+    }
+
     pub fn fontName(self: Month, language: languages.Language) ?[:0]const u8 {
         return switch (language) {
             .@"formal_o'eaiaa" => switch (self) {
@@ -136,7 +140,7 @@ pub const MonthAndDay = struct {
 pub const YearMonthDay = struct {
     year: Year,
     month: Month,
-    day_index: Day,
+    month_day_index: Day,
 
     pub fn fromGregorianEpochDay(gregorian: epoch.EpochDay) YearMonthDay {
         // calculate how many days have passed since the epoch
@@ -166,8 +170,14 @@ pub const YearMonthDay = struct {
         return .{
             .year = year,
             .month = month_and_day.month,
-            .day_index = month_and_day.day_index,
+            .month_day_index = month_and_day.day_index,
         };
+    }
+
+    pub fn toGregorianEpochDay(self: YearMonthDay) epoch.EpochDay {
+        const offset_from_anchor = self.totalDays() - anchor.@"o'eaiaa".time.totalDays();
+
+        return .{ .day = @intCast(anchor.@"o'eaiaa".days_from_epoch_to_point + offset_from_anchor) };
     }
 
     pub fn totalDays(self: YearMonthDay) i48 {
@@ -179,11 +189,19 @@ pub const YearMonthDay = struct {
         for (std.enums.values(Month)[0..@intFromEnum(self.month)]) |month|
             month_days += month.days(self.year);
 
-        return self.day_index + month_days + year_days;
+        return self.month_day_index + month_days + year_days;
     }
 
-    pub fn day(self: YearMonthDay) Day {
-        return self.day_index + 1;
+    pub fn yearStart(self: YearMonthDay) YearMonthDay {
+        return .{
+            .month_day_index = 0,
+            .month = .alikakaela,
+            .year = self.year,
+        };
+    }
+
+    pub fn monthDay(self: YearMonthDay) Day {
+        return self.month_day_index + 1;
     }
 
     pub fn yearDayIndex(self: YearMonthDay) i48 {
@@ -191,6 +209,6 @@ pub const YearMonthDay = struct {
         for (std.enums.values(Month)[0..@intFromEnum(self.month)]) |month|
             month_days += month.days(self.year);
 
-        return month_days + self.day_index;
+        return month_days + self.month_day_index;
     }
 };

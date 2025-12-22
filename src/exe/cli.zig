@@ -91,7 +91,7 @@ pub fn main() !void {
 
                     try out.print("{d}, {d} {s}", .{
                         year_month_day.year,
-                        year_month_day.day(),
+                        year_month_day.monthDay(),
                         year_month_day.month.fontName(language) orelse return error.MissingLocalizedName,
                     });
                 },
@@ -163,7 +163,7 @@ pub fn main() !void {
             try out.print("O'eaiā:\t\t{d}\t{s}\t\t{d}\t{s}\n", .{
                 @"o'eaiaa_year_month_day".year,
                 @"o'eaiaa_year_month_day".month.fontName(.english) orelse return error.MissingLocalizedName,
-                @"o'eaiaa_year_month_day".day(),
+                @"o'eaiaa_year_month_day".monthDay(),
                 if (@"o'eaiaa_time".isLeapYear(@"o'eaiaa_year_month_day".year)) "(Leap Year!)" else "",
             });
             try out.print("\n", .{});
@@ -188,7 +188,7 @@ fn printTestTime(writer: anytype, secs: u64) !void {
     try writer.print("Gregorian: {d}, {s} {d}\n", .{ year_day.year, @tagName(month_day.month), month_day.day_index + 1 });
     try writer.print("Hekenic: {d}, {s} {d}      {d}\n", .{ hekenic_year_month_day.year, @tagName(hekenic_year_month_day.month), hekenic_year_month_day.day(), hekenic_year_month_day.toGregorianEpochDay().day });
     try writer.print("Martian: {d}, {d}\n", .{ martian_year_day.year, martian_year_day.day_index + 1 });
-    try writer.print("O'eaiā: {d}, {s} {d}", .{ @"o'eaiaa_year_day".year, @tagName(@"o'eaiaa_year_day".month), @"o'eaiaa_year_day".day() });
+    try writer.print("O'eaiā: {d}, {s} {d}", .{ @"o'eaiaa_year_day".year, @tagName(@"o'eaiaa_year_day".month), @"o'eaiaa_year_day".monthDay() });
     if (@"o'eaiaa_time".isLeapYear(@"o'eaiaa_year_day".year))
         try writer.print(" (leap year!)", .{});
     try writer.print("\n\n", .{});
