@@ -9,6 +9,7 @@ const laghari = @import("laghari");
 const hekenic = laghari.time.hekenic;
 const @"o'eaiaa" = laghari.time.@"o'eaiaa";
 const gregorian = laghari.time.gregorian;
+const martian = laghari.time.martian;
 const zeit = @import("zeit");
 
 const calendars = @import("calendars/calendars.zig");
@@ -95,6 +96,7 @@ pub const State = struct {
         epoch_year_day: epoch.YearAndDay,
         epoch_month_day: epoch.MonthAndDay,
         hekenic: hekenic.YearMonthDay,
+        martian: martian.YearDay,
         @"o'eaiaa": @"o'eaiaa".YearMonthDay,
         gregorian: gregorian.YearMonthDay,
 
@@ -104,6 +106,7 @@ pub const State = struct {
             const epoch_year_day = epoch_day.calculateYearDay();
             const epoch_month_day = epoch_year_day.calculateMonthDay();
             const instant_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const instant_martian = martian.YearDay.fromGregorianEpochDay(epoch_day);
             const @"instant_o'eaiaa": @"o'eaiaa".YearMonthDay = .fromGregorianEpochDay(epoch_day);
             const instant_gregorian: gregorian.YearMonthDay = .fromEpochDay(epoch_day);
 
@@ -114,6 +117,7 @@ pub const State = struct {
                 .epoch_year_day = epoch_year_day,
                 .epoch_month_day = epoch_month_day,
                 .hekenic = instant_hekenic,
+                .martian = instant_martian,
                 .@"o'eaiaa" = @"instant_o'eaiaa",
                 .gregorian = instant_gregorian,
             };
@@ -262,6 +266,7 @@ pub fn frame() !dvui.App.Result {
             // try calendars.gregorian.title(state);
             // try calendars.@"o'eaiaa".title(state);
             try calendars.hekenic.title(state);
+            // try calendars.martian.title(state);
         }
 
         _ = dvui.separator(@src(), .{ .expand = .horizontal });
@@ -279,6 +284,7 @@ pub fn frame() !dvui.App.Result {
             // try calendars.gregorian.frame(state);
             // try calendars.@"o'eaiaa".frame(state);
             try calendars.hekenic.frame(state);
+            // try calendars.martian.frame(state);
         }
     }
 

@@ -37,6 +37,13 @@ pub const YearDay = struct {
     pub fn day(self: YearDay) Day {
         return self.day_index + 1;
     }
+
+    pub fn yearStart(self: YearDay) YearDay {
+        return .{
+            .year = self.year,
+            .day_index = 0,
+        };
+    }
 };
 
 pub export fn laghariMartianYearFromGregorian(gregorian: root.CEpoch) root.CYear {
