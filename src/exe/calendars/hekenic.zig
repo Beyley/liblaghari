@@ -44,6 +44,7 @@ pub fn frame(state: State) !void {
                 .normal_colour = colors.slight_solar_highlight,
                 .highlighted_colour = colors.strong_solar_highlight,
                 .text_colour = colors.laghari,
+                .flexbox = box,
             }, "{d}", .{day_index + 1});
         }
         // }

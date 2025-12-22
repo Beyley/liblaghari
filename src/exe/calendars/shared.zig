@@ -13,6 +13,8 @@ pub const DayInfo = struct {
     highlighted_colour: dvui.Color,
     text_colour: dvui.Color,
 
+    flexbox: *dvui.FlexBoxWidget,
+
     pub fn isDay(self: DayInfo, other: epoch.EpochDay) bool {
         return self.epoch_day.day == other.day;
     }
@@ -20,8 +22,25 @@ pub const DayInfo = struct {
 
 const day_size: dvui.Size = .{ .w = 65, .h = 65 };
 
-pub fn day(state: State, day_info: DayInfo, comptime format: [:0]const u8, args: anytype) !void {
-    const colour: dvui.Color = if (day_info.isDay(state.now.epoch_day)) day_info.highlighted_colour else day_info.normal_colour;
+pub fn day(
+    state: State,
+    day_info: DayInfo,
+    comptime format: [:0]const u8,
+    args: anytype,
+) !void {
+    var outer_box = dvui.box(@src(), .{}, .{
+        .id_extra = @as(u64, day_info.epoch_day.day) + std.math.maxInt(u47) + 1,
+    });
+    defer outer_box.deinit();
+
+    const colour: dvui.Color =
+        if (day_info.isDay(state.now.epoch_day))
+            day_info.highlighted_colour
+        else
+            (if ((day_info.flexbox.col + day_info.flexbox.row) % 2 == 0)
+                day_info.normal_colour
+            else
+                .transparent);
 
     var day_box = dvui.box(@src(), .{}, .{
         .id_extra = day_info.epoch_day.day,
