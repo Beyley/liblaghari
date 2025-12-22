@@ -66,6 +66,40 @@ pub const Month = enum {
             .@"formal_o'eaiaa" => null, // no data avaialable
         };
     }
+
+    pub fn romanizedNameSafe(self: Month, language: languages.Language) [:0]const u8 {
+        return self.romanizedName(language) orelse @tagName(self);
+    }
+
+    pub fn romanizedName(self: Month, language: languages.Language) ?[:0]const u8 {
+        return switch (language) {
+            .english => self.fontName(.english),
+            .solar => switch (self) {
+                .sii => "Sii",
+                .sitye => "Sitye",
+                .sichi => "Sichi",
+                .sihe => "Sihe",
+                .siyem => "Siyem",
+            },
+            .martian => switch (self) {
+                .sii => "Cihä",
+                .sitye => "Cihcä",
+                .sichi => "Cihci",
+                .sihe => "Cihi",
+                .siyem => "Cihyäm",
+            },
+            .neptunian => switch (self) {
+                .sii => "Chife",
+                .sitye => "Chiche",
+                .sichi => "Chichi",
+                .sihe => "Chihi",
+                .siyem => "Chiyem",
+            },
+            .future_solar => null, // no data available
+            .@"informal_o'eaiaa" => null, // no data avaialable
+            .@"formal_o'eaiaa" => null, // no data avaialable
+        };
+    }
 };
 
 pub const MonthAndDay = struct {

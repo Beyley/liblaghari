@@ -22,8 +22,10 @@ pub fn frame(state: State) !void {
     const year_start_epoch_day = state.now.hekenic.yearStart().toGregorianEpochDay();
 
     for (0..@divExact(hekenic.days_per_month, hekenic.days_per_week)) |week_index| {
+        const border: dvui.Rect = .all(1);
         var box = dvui.flexbox(@src(), .{
             .justify_content = .start,
+            .border_collapse = border.topLeft(),
         }, .{
             .id_extra = week_index,
             .margin = .all(4),

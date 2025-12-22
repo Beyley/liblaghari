@@ -26,7 +26,7 @@ pub fn day(state: State, day_info: DayInfo, comptime format: [:0]const u8, args:
     var day_box = dvui.box(@src(), .{}, .{
         .id_extra = day_info.epoch_day.day,
 
-        .margin = if (day_info.last_day_in_row) .all(0) else .{ .w = -1, .h = -1 },
+        .margin = .all(0),
         .padding = .all(4),
 
         .border = .all(1),

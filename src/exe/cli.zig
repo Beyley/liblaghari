@@ -61,6 +61,8 @@ pub fn main() !void {
 
             const date_type = std.meta.stringToEnum(DateType, args[2]) orelse return error.UnknownDateType;
             const language = std.meta.stringToEnum(laghari.languages.Language, args[3]) orelse return error.UnknownLanguage;
+            const romanized = if (args.len > 4) (std.mem.eql(u8, args[4], "true")) else false;
+            const year = if (args.len > 5) (std.mem.eql(u8, args[5], "true")) else true;
 
             const epoch_day = epoch_seconds.getEpochDay();
 
@@ -68,9 +70,14 @@ pub fn main() !void {
                 .hekenic => {
                     const hekenic_year_month_day: hekenic_time.YearMonthDay = .fromGregorianEpochDay(epoch_day);
 
-                    try out.print("{d},{?s},{d}", .{
-                        hekenic_year_month_day.year,
-                        hekenic_year_month_day.month.fontName(language),
+                    if (year)
+                        try out.print("{d}, ", .{hekenic_year_month_day.year});
+
+                    try out.print("{s}, {d}", .{
+                        if (romanized)
+                            hekenic_year_month_day.month.romanizedNameSafe(language)
+                        else
+                            hekenic_year_month_day.month.fontNameSafe(language),
                         hekenic_year_month_day.day(),
                     });
                 },
@@ -114,6 +121,7 @@ pub fn main() !void {
             try printTestTime(out, 4317865200);
             try printTestTime(out, 13562294400);
             try printTestTime(out, 1771747200);
+            try printTestTime(out, 1741089600);
         },
         .now => {
             const epoch_day = epoch_seconds.getEpochDay();
