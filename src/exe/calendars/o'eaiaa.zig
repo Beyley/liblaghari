@@ -51,6 +51,5 @@ pub fn frame(state: State) !void {
                 .week_index = week_index,
             }, "{d}", .{month_day_index + 1});
         }
-        // }
     }
 }

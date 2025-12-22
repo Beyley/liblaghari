@@ -12,7 +12,6 @@ pub fn title(state: State) !void {
     dvui.label(@src(), "{s}", .{
         state.now.hekenic.month.fontNameSafe(.english),
     }, .{
-        // .font_style = .title,
         .font = dvui.themeGet().font_title,
         .color_text = colors.laghari,
     });
@@ -25,7 +24,6 @@ pub fn frame(state: State) !void {
         var box = shared.week(week_index);
         defer box.deinit();
 
-        // for (0..hekenic.months_per_year) |month| {
         for (0..hekenic.days_per_week) |week_day_index| {
             const day_index = @as(usize, @intFromEnum(state.now.hekenic.month)) * hekenic.days_per_month //
             + week_index * hekenic.days_per_week //
@@ -40,6 +38,5 @@ pub fn frame(state: State) !void {
                 .week_index = week_index,
             }, "{d}", .{day_index + 1});
         }
-        // }
     }
 }

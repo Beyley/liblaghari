@@ -8,6 +8,7 @@ pub const panic = dvui.App.panic;
 const laghari = @import("laghari");
 const hekenic = laghari.time.hekenic;
 const @"o'eaiaa" = laghari.time.@"o'eaiaa";
+const gregorian = laghari.time.gregorian;
 const zeit = @import("zeit");
 
 const calendars = @import("calendars/calendars.zig");
@@ -91,21 +92,30 @@ pub const State = struct {
         instant: zeit.Instant,
         epoch_seconds: epoch.EpochSeconds,
         epoch_day: epoch.EpochDay,
+        epoch_year_day: epoch.YearAndDay,
+        epoch_month_day: epoch.MonthAndDay,
         hekenic: hekenic.YearMonthDay,
         @"o'eaiaa": @"o'eaiaa".YearMonthDay,
+        gregorian: gregorian.YearMonthDay,
 
         pub fn fromInstant(instant: zeit.Instant) Now {
             const epoch_seconds: std.time.epoch.EpochSeconds = .{ .secs = @intCast(instant.timezone.adjust(instant.unixTimestamp()).timestamp) };
             const epoch_day = epoch_seconds.getEpochDay();
+            const epoch_year_day = epoch_day.calculateYearDay();
+            const epoch_month_day = epoch_year_day.calculateMonthDay();
             const instant_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
             const @"instant_o'eaiaa": @"o'eaiaa".YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const instant_gregorian: gregorian.YearMonthDay = .fromEpochDay(epoch_day);
 
             return .{
                 .instant = instant,
                 .epoch_seconds = epoch_seconds,
                 .epoch_day = epoch_day,
+                .epoch_year_day = epoch_year_day,
+                .epoch_month_day = epoch_month_day,
                 .hekenic = instant_hekenic,
                 .@"o'eaiaa" = @"instant_o'eaiaa",
+                .gregorian = instant_gregorian,
             };
         }
     };
@@ -249,6 +259,7 @@ pub fn frame() !dvui.App.Result {
         defer vbox.deinit();
 
         {
+            // try calendars.gregorian.title(state);
             // try calendars.@"o'eaiaa".title(state);
             try calendars.hekenic.title(state);
         }
@@ -265,6 +276,7 @@ pub fn frame() !dvui.App.Result {
             });
             defer calendar_scroll.deinit();
 
+            // try calendars.gregorian.frame(state);
             // try calendars.@"o'eaiaa".frame(state);
             try calendars.hekenic.frame(state);
         }
