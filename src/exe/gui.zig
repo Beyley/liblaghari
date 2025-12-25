@@ -292,6 +292,8 @@ pub fn frame() !dvui.App.Result {
         var vbox = dvui.box(@src(), .{}, .{
             .style = .content,
 
+            .expand = .horizontal,
+
             .background = true,
             .padding = .all(4),
         });
