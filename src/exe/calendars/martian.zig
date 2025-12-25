@@ -8,7 +8,7 @@ const colors = @import("../colors.zig");
 const State = @import("../gui.zig").State;
 const shared = @import("shared.zig");
 
-pub fn title(state: State) !void {
+pub fn title(state: *const State) !void {
     _ = state;
 
     dvui.label(@src(), "{s}", .{
@@ -20,7 +20,7 @@ pub fn title(state: State) !void {
     });
 }
 
-pub fn frame(state: State) !void {
+pub fn frame(state: *const State) !void {
     const now = state.now.martian;
 
     const year_start_epoch_day = now.yearStart().toGregorianEpochDay();
@@ -40,9 +40,6 @@ pub fn frame(state: State) !void {
 
             try shared.day(state, .{
                 .epoch_day = .{ .day = @intCast(year_start_epoch_day.day + day_index) },
-                .normal_colour = colors.slight_solar_highlight,
-                .highlighted_colour = colors.strong_solar_highlight,
-                .text_colour = colors.laghari,
                 .flexbox = box,
                 .week_index = week_index,
             }, "{d}", .{day_index + 1});

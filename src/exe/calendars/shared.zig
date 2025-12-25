@@ -8,9 +8,6 @@ const State = @import("../gui.zig").State;
 
 pub const DayInfo = struct {
     epoch_day: epoch.EpochDay,
-    normal_colour: dvui.Color,
-    highlighted_colour: dvui.Color,
-    text_colour: dvui.Color,
     week_index: usize,
 
     flexbox: *dvui.FlexBoxWidget,
@@ -35,7 +32,7 @@ pub fn week(week_index: usize) *dvui.FlexBoxWidget {
 }
 
 pub fn day(
-    state: State,
+    state: *const State,
     day_info: DayInfo,
     comptime format: [:0]const u8,
     args: anytype,
@@ -45,14 +42,14 @@ pub fn day(
     });
     defer outer_box.deinit();
 
-    const colour: dvui.Color =
+    const style: dvui.Theme.Style.Name =
         if (day_info.isDay(state.now.epoch_day))
-            day_info.highlighted_colour
+            .app1
         else
             (if ((day_info.flexbox.col + day_info.flexbox.row + day_info.week_index) % 2 == 0)
-                day_info.normal_colour
+                .app2
             else
-                .transparent);
+                .app3);
 
     var day_box = dvui.box(@src(), .{}, .{
         .id_extra = day_info.epoch_day.day,
@@ -65,7 +62,7 @@ pub fn day(
         .min_size_content = day_size,
         .max_size_content = .size(day_size),
 
-        .color_fill = colour,
+        .style = style,
 
         .background = true,
     });
@@ -75,7 +72,6 @@ pub fn day(
     if (dvui.clicked(&day_box.wd, .{})) {}
 
     dvui.label(@src(), format, args, .{
-        .style = .content,
-        .color_text = day_info.text_colour,
+        .style = style,
     });
 }

@@ -8,7 +8,7 @@ const colors = @import("../colors.zig");
 const State = @import("../gui.zig").State;
 const shared = @import("shared.zig");
 
-pub fn title(state: State) !void {
+pub fn title(state: *const State) !void {
     dvui.label(@src(), "{s}", .{
         switch (state.now.epoch_month_day.month) {
             .jan => "January",
@@ -31,7 +31,7 @@ pub fn title(state: State) !void {
     });
 }
 
-pub fn frame(state: State) !void {
+pub fn frame(state: *const State) !void {
     const now = state.now.gregorian;
 
     const days_in_month = now.month.daysInMonth(now.year);
@@ -50,9 +50,6 @@ pub fn frame(state: State) !void {
 
             try shared.day(state, .{
                 .epoch_day = .{ .day = @intCast(month_start_epoch_day.day + month_day_index) },
-                .normal_colour = colors.slight_solar_highlight,
-                .highlighted_colour = colors.strong_solar_highlight,
-                .text_colour = colors.laghari,
                 .flexbox = box,
                 .week_index = week_index,
             }, "{d}", .{month_day_index + 1});

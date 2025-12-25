@@ -8,7 +8,7 @@ const colors = @import("../colors.zig");
 const State = @import("../gui.zig").State;
 const shared = @import("shared.zig");
 
-pub fn title(state: State) !void {
+pub fn title(state: *const State) !void {
     dvui.label(@src(), "{s}", .{
         state.now.hekenic.month.fontNameSafe(.english),
     }, .{
@@ -17,7 +17,7 @@ pub fn title(state: State) !void {
     });
 }
 
-pub fn frame(state: State) !void {
+pub fn frame(state: *const State) !void {
     const year_start_epoch_day = state.now.hekenic.yearStart().toGregorianEpochDay();
 
     for (0..@divExact(hekenic.days_per_month, hekenic.days_per_week)) |week_index| {
@@ -31,9 +31,6 @@ pub fn frame(state: State) !void {
 
             try shared.day(state, .{
                 .epoch_day = .{ .day = @intCast(year_start_epoch_day.day + day_index) },
-                .normal_colour = colors.slight_solar_highlight,
-                .highlighted_colour = colors.strong_solar_highlight,
-                .text_colour = colors.laghari,
                 .flexbox = box,
                 .week_index = week_index,
             }, "{d}", .{day_index + 1});

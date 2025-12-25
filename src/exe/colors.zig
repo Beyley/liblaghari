@@ -18,3 +18,5 @@ pub const strong_martian_highlight: dvui.Color = .fromHex("#FF96BB50");
 
 pub const slight_neptunian_highlight: dvui.Color = .fromHex("#89B7FF15");
 pub const strong_neptunian_highlight: dvui.Color = .fromHex("#89B7FF50");
+
+pub const err: dvui.Color = .fromHex("#FF464B");

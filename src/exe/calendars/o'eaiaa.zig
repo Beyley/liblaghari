@@ -8,7 +8,7 @@ const colors = @import("../colors.zig");
 const State = @import("../gui.zig").State;
 const shared = @import("shared.zig");
 
-pub fn title(state: State) !void {
+pub fn title(state: *const State) !void {
     dvui.label(@src(), "{s}", .{
         state.now.@"o'eaiā".month.fontNameSafe(.english),
     }, .{
@@ -18,7 +18,7 @@ pub fn title(state: State) !void {
     });
 }
 
-pub fn frame(state: State) !void {
+pub fn frame(state: *const State) !void {
     const now = state.now.@"o'eaiā";
 
     // o'eaiaa uses a base 8 number system
@@ -44,9 +44,6 @@ pub fn frame(state: State) !void {
 
             try shared.day(state, .{
                 .epoch_day = year_month_day.toGregorianEpochDay(),
-                .normal_colour = colors.slight_solar_highlight,
-                .highlighted_colour = colors.strong_solar_highlight,
-                .text_colour = colors.laghari,
                 .flexbox = box,
                 .week_index = week_index,
             }, "{d}", .{month_day_index + 1});

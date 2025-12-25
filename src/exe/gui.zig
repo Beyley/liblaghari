@@ -65,6 +65,33 @@ pub const dvui_app: dvui.App = .{
                         .text = colors.laghari,
                         .text_hover = .black,
                     },
+                    .window = .{
+                        .text = colors.bright,
+                        .fill = .black,
+                        .border = colors.laghari,
+                    },
+                    .highlight = .{
+                        .fill = .black,
+                        .border = colors.laghari,
+                        .text = colors.laghari,
+                    },
+                    .err = .{
+                        .fill = .black,
+                        .border = colors.laghari,
+                        .text = colors.err,
+                    },
+                    .app1 = .{
+                        .fill = colors.strong_highlight,
+                        .text = colors.laghari,
+                    },
+                    .app2 = .{
+                        .fill = colors.slight_highlight,
+                        .text = colors.laghari,
+                    },
+                    .app3 = .{
+                        .fill = .transparent,
+                        .text = colors.laghari,
+                    },
                 },
             },
             .vsync = true,
@@ -128,7 +155,10 @@ pub const State = struct {
     env_map: std.process.EnvMap,
     local_timezone: zeit.TimeZone,
 
+    /// Roughly when now is
     now: Now,
+    /// The time of the user's "cursor"
+    cursor_time: Now,
 
     options: Options,
 };
@@ -148,11 +178,14 @@ pub fn init(win: *dvui.Window) !void {
 
         const now = try zeit.instant(.{ .timezone = &local_timezone });
 
+        const now_state: State.Now = .fromInstant(now);
+
         state = .{
             .env_map = env_map,
             .local_timezone = local_timezone,
 
-            .now = .fromInstant(now),
+            .now = now_state,
+            .cursor_time = now_state,
 
             .options = .{
                 .calendar = .hekenic,
@@ -193,64 +226,6 @@ pub fn deinit() void {
     }
 }
 
-fn debugging() !void {
-    const label = if (dvui.Examples.show_demo_window) "Hide Demo Window" else "Show Demo Window";
-    if (dvui.button(@src(), label, .{}, .{ .tag = "show-demo-btn" })) {
-        dvui.Examples.show_demo_window = !dvui.Examples.show_demo_window;
-    }
-
-    if (dvui.button(@src(), "Debug Window", .{}, .{})) {
-        dvui.toggleDebugWindow();
-    }
-
-    {
-        var hbox = dvui.box(@src(), .{ .dir = .horizontal }, .{});
-        defer hbox.deinit();
-        dvui.label(@src(), "Pinch Zoom or Scale", .{}, .{});
-        if (dvui.buttonIcon(@src(), "plus", dvui.entypo.plus, .{}, .{}, .{})) {
-            dvui.currentWindow().content_scale *= 1.1;
-        }
-
-        if (dvui.buttonIcon(@src(), "minus", dvui.entypo.minus, .{}, .{}, .{})) {
-            dvui.currentWindow().content_scale /= 1.1;
-        }
-
-        if (dvui.currentWindow().content_scale != orig_content_scale) {
-            if (dvui.button(@src(), "Reset Scale", .{}, .{})) {
-                dvui.currentWindow().content_scale = orig_content_scale;
-            }
-        }
-    }
-
-    if (dvui.backend.kind != .web) {
-        _ = dvui.checkbox(@src(), &warn_on_quit, "Warn on Quit", .{});
-
-        if (warn_on_quit) {
-            if (warn_on_quit_closing) return .close;
-
-            const wd = dvui.currentWindow().data();
-            for (dvui.events()) |*e| {
-                if (!dvui.eventMatchSimple(e, wd)) continue;
-
-                if ((e.evt == .window and e.evt.window.action == .close) or (e.evt == .app and e.evt.app.action == .quit)) {
-                    e.handle(@src(), wd);
-
-                    const warnAfter: dvui.DialogCallAfterFn = struct {
-                        fn warnAfter(_: dvui.Id, response: dvui.enums.DialogResponse) !void {
-                            if (response == .ok) warn_on_quit_closing = true;
-                        }
-                    }.warnAfter;
-
-                    dvui.dialog(@src(), .{}, .{ .message = "Really Quit?", .cancel_label = "Cancel", .callafterFn = warnAfter });
-                }
-            }
-        }
-    }
-
-    // look at demo() for examples of dvui widgets, shows in a floating window
-    dvui.Examples.demo();
-}
-
 pub fn frame() !dvui.App.Result {
     var scaler = dvui.scale(@src(), .{
         .scale = &dvui.currentWindow().content_scale,
@@ -271,7 +246,7 @@ pub fn frame() !dvui.App.Result {
             @src(),
             "Options",
             .{ .submenu = true },
-            .{ .tag = "first-focusable" },
+            .{ .tag = "first-focusable", .style = .control },
         )) |options_r| {
             var options_fw = dvui.floatingMenu(@src(), .{ .from = options_r }, .{});
             defer options_fw.deinit();
@@ -280,24 +255,32 @@ pub fn frame() !dvui.App.Result {
                 @src(),
                 "Calendar",
                 .{ .submenu = true },
-                .{},
+                .{ .style = .control },
             )) |calendar_r| {
                 var calendar_fw = dvui.floatingMenu(@src(), .{ .from = calendar_r }, .{});
                 defer calendar_fw.deinit();
 
-                if (dvui.menuItemLabel(@src(), "Gregorian", .{}, .{ .expand = .horizontal }) != null) {
+                if (dvui.menuItemLabel(@src(), "Gregorian", .{}, .{
+                    .expand = .horizontal,
+                }) != null) {
                     state.options.calendar = .gregorian;
                     options_fw.close();
                 }
-                if (dvui.menuItemLabel(@src(), "Hekenic", .{}, .{ .expand = .horizontal }) != null) {
+                if (dvui.menuItemLabel(@src(), "Hekenic", .{}, .{
+                    .expand = .horizontal,
+                }) != null) {
                     state.options.calendar = .hekenic;
                     options_fw.close();
                 }
-                if (dvui.menuItemLabel(@src(), "Martian", .{}, .{ .expand = .horizontal }) != null) {
+                if (dvui.menuItemLabel(@src(), "Martian", .{}, .{
+                    .expand = .horizontal,
+                }) != null) {
                     state.options.calendar = .martian;
                     options_fw.close();
                 }
-                if (dvui.menuItemLabel(@src(), "O'eaiā", .{}, .{ .expand = .horizontal }) != null) {
+                if (dvui.menuItemLabel(@src(), "O'eaiā", .{}, .{
+                    .expand = .horizontal,
+                }) != null) {
                     state.options.calendar = .@"o'eaiā";
                     options_fw.close();
                 }
@@ -316,10 +299,10 @@ pub fn frame() !dvui.App.Result {
 
         {
             switch (state.options.calendar) {
-                .gregorian => try calendars.gregorian.title(state),
-                .hekenic => try calendars.hekenic.title(state),
-                .martian => try calendars.martian.title(state),
-                .@"o'eaiā" => try calendars.@"o'eaiā".title(state),
+                .gregorian => try calendars.gregorian.title(&state),
+                .hekenic => try calendars.hekenic.title(&state),
+                .martian => try calendars.martian.title(&state),
+                .@"o'eaiā" => try calendars.@"o'eaiā".title(&state),
             }
         }
 
@@ -336,10 +319,10 @@ pub fn frame() !dvui.App.Result {
             defer calendar_scroll.deinit();
 
             switch (state.options.calendar) {
-                .gregorian => try calendars.gregorian.frame(state),
-                .hekenic => try calendars.hekenic.frame(state),
-                .martian => try calendars.martian.frame(state),
-                .@"o'eaiā" => try calendars.@"o'eaiā".frame(state),
+                .gregorian => try calendars.gregorian.frame(&state),
+                .hekenic => try calendars.hekenic.frame(&state),
+                .martian => try calendars.martian.frame(&state),
+                .@"o'eaiā" => try calendars.@"o'eaiā".frame(&state),
             }
         }
     }
