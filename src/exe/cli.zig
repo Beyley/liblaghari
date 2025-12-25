@@ -5,7 +5,7 @@ const laghari = @import("laghari");
 const hekenic_time = laghari.time.hekenic;
 const martian_time = laghari.time.martian;
 const babbep_time = laghari.time.babbep;
-const @"o'eaiaa_time" = laghari.time.@"o'eaiaa";
+const @"o'eaiaa_time" = laghari.time.@"o'eaiā";
 const zeit = @import("zeit");
 
 const Commands = enum {

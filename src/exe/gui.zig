@@ -7,13 +7,14 @@ pub const main = dvui.App.main;
 pub const panic = dvui.App.panic;
 const laghari = @import("laghari");
 const hekenic = laghari.time.hekenic;
-const @"o'eaiaa" = laghari.time.@"o'eaiaa";
+const @"o'eaiā" = laghari.time.@"o'eaiā";
 const gregorian = laghari.time.gregorian;
 const martian = laghari.time.martian;
 const zeit = @import("zeit");
 
 const calendars = @import("calendars/calendars.zig");
 const colors = @import("colors.zig");
+const Options = @import("Options.zig");
 
 const lato_light_family = "Lato Light";
 const lato_regular_family = "Lato Regular";
@@ -97,7 +98,7 @@ pub const State = struct {
         epoch_month_day: epoch.MonthAndDay,
         hekenic: hekenic.YearMonthDay,
         martian: martian.YearDay,
-        @"o'eaiaa": @"o'eaiaa".YearMonthDay,
+        @"o'eaiā": @"o'eaiā".YearMonthDay,
         gregorian: gregorian.YearMonthDay,
 
         pub fn fromInstant(instant: zeit.Instant) Now {
@@ -107,7 +108,7 @@ pub const State = struct {
             const epoch_month_day = epoch_year_day.calculateMonthDay();
             const instant_hekenic: hekenic.YearMonthDay = .fromGregorianEpochDay(epoch_day);
             const instant_martian = martian.YearDay.fromGregorianEpochDay(epoch_day);
-            const @"instant_o'eaiaa": @"o'eaiaa".YearMonthDay = .fromGregorianEpochDay(epoch_day);
+            const @"instant_o'eaiaa": @"o'eaiā".YearMonthDay = .fromGregorianEpochDay(epoch_day);
             const instant_gregorian: gregorian.YearMonthDay = .fromEpochDay(epoch_day);
 
             return .{
@@ -118,7 +119,7 @@ pub const State = struct {
                 .epoch_month_day = epoch_month_day,
                 .hekenic = instant_hekenic,
                 .martian = instant_martian,
-                .@"o'eaiaa" = @"instant_o'eaiaa",
+                .@"o'eaiā" = @"instant_o'eaiaa",
                 .gregorian = instant_gregorian,
             };
         }
@@ -128,6 +129,8 @@ pub const State = struct {
     local_timezone: zeit.TimeZone,
 
     now: Now,
+
+    options: Options,
 };
 
 var state_init: bool = false;
@@ -150,6 +153,10 @@ pub fn init(win: *dvui.Window) !void {
             .local_timezone = local_timezone,
 
             .now = .fromInstant(now),
+
+            .options = .{
+                .calendar = .hekenic,
+            },
         };
 
         state_init = true;
@@ -254,6 +261,51 @@ pub fn frame() !dvui.App.Result {
     scaler.deinit();
 
     {
+        var hbox = dvui.box(@src(), .{ .dir = .horizontal }, .{ .style = .window, .background = true, .expand = .horizontal });
+        defer hbox.deinit();
+
+        var m = dvui.menu(@src(), .horizontal, .{});
+        defer m.deinit();
+
+        if (dvui.menuItemLabel(
+            @src(),
+            "Options",
+            .{ .submenu = true },
+            .{ .tag = "first-focusable" },
+        )) |options_r| {
+            var options_fw = dvui.floatingMenu(@src(), .{ .from = options_r }, .{});
+            defer options_fw.deinit();
+
+            if (dvui.menuItemLabel(
+                @src(),
+                "Calendar",
+                .{ .submenu = true },
+                .{},
+            )) |calendar_r| {
+                var calendar_fw = dvui.floatingMenu(@src(), .{ .from = calendar_r }, .{});
+                defer calendar_fw.deinit();
+
+                if (dvui.menuItemLabel(@src(), "Gregorian", .{}, .{ .expand = .horizontal }) != null) {
+                    state.options.calendar = .gregorian;
+                    options_fw.close();
+                }
+                if (dvui.menuItemLabel(@src(), "Hekenic", .{}, .{ .expand = .horizontal }) != null) {
+                    state.options.calendar = .hekenic;
+                    options_fw.close();
+                }
+                if (dvui.menuItemLabel(@src(), "Martian", .{}, .{ .expand = .horizontal }) != null) {
+                    state.options.calendar = .martian;
+                    options_fw.close();
+                }
+                if (dvui.menuItemLabel(@src(), "O'eaiā", .{}, .{ .expand = .horizontal }) != null) {
+                    state.options.calendar = .@"o'eaiā";
+                    options_fw.close();
+                }
+            }
+        }
+    }
+
+    {
         var vbox = dvui.box(@src(), .{}, .{
             .style = .content,
 
@@ -263,10 +315,12 @@ pub fn frame() !dvui.App.Result {
         defer vbox.deinit();
 
         {
-            // try calendars.gregorian.title(state);
-            // try calendars.@"o'eaiaa".title(state);
-            try calendars.hekenic.title(state);
-            // try calendars.martian.title(state);
+            switch (state.options.calendar) {
+                .gregorian => try calendars.gregorian.title(state),
+                .hekenic => try calendars.hekenic.title(state),
+                .martian => try calendars.martian.title(state),
+                .@"o'eaiā" => try calendars.@"o'eaiā".title(state),
+            }
         }
 
         _ = dvui.separator(@src(), .{ .expand = .horizontal });
@@ -281,10 +335,12 @@ pub fn frame() !dvui.App.Result {
             });
             defer calendar_scroll.deinit();
 
-            // try calendars.gregorian.frame(state);
-            // try calendars.@"o'eaiaa".frame(state);
-            try calendars.hekenic.frame(state);
-            // try calendars.martian.frame(state);
+            switch (state.options.calendar) {
+                .gregorian => try calendars.gregorian.frame(state),
+                .hekenic => try calendars.hekenic.frame(state),
+                .martian => try calendars.martian.frame(state),
+                .@"o'eaiā" => try calendars.@"o'eaiā".frame(state),
+            }
         }
     }
 

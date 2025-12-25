@@ -1,7 +1,7 @@
 const std = @import("std");
 const epoch = std.time.epoch;
 
-const @"o'eaiaa" = @import("laghari").time.@"o'eaiaa";
+const @"o'eaiā" = @import("laghari").time.@"o'eaiā";
 const dvui = @import("dvui");
 
 const colors = @import("../colors.zig");
@@ -10,7 +10,7 @@ const shared = @import("shared.zig");
 
 pub fn title(state: State) !void {
     dvui.label(@src(), "{s}", .{
-        state.now.@"o'eaiaa".month.fontNameSafe(.english),
+        state.now.@"o'eaiā".month.fontNameSafe(.english),
     }, .{
         // .font_style = .title,
         .font = dvui.themeGet().font_title,
@@ -19,7 +19,7 @@ pub fn title(state: State) !void {
 }
 
 pub fn frame(state: State) !void {
-    const now = state.now.@"o'eaiaa";
+    const now = state.now.@"o'eaiā";
 
     // o'eaiaa uses a base 8 number system
     const days_per_week = 8;
@@ -36,7 +36,7 @@ pub fn frame(state: State) !void {
                 break;
             }
 
-            const year_month_day: @"o'eaiaa".YearMonthDay = .{
+            const year_month_day: @"o'eaiā".YearMonthDay = .{
                 .month = now.month,
                 .year = now.year,
                 .month_day_index = @intCast(month_day_index),

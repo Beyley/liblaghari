@@ -144,14 +144,14 @@ pub const YearMonthDay = struct {
 
     pub fn fromGregorianEpochDay(gregorian: epoch.EpochDay) YearMonthDay {
         // calculate how many days have passed since the epoch
-        const days_since_anchor: i48 = @as(i48, gregorian.day) - anchor.@"o'eaiaa".days_from_epoch_to_point;
+        const days_since_anchor: i48 = @as(i48, gregorian.day) - anchor.@"o'eaiā".days_from_epoch_to_point;
 
         // we are on the anchor day
         if (days_since_anchor == 0)
-            return anchor.@"o'eaiaa".time;
+            return anchor.@"o'eaiā".time;
 
-        var year: Year = anchor.@"o'eaiaa".time.year;
-        var day_index = days_since_anchor + anchor.@"o'eaiaa".time.yearDayIndex();
+        var year: Year = anchor.@"o'eaiā".time.year;
+        var day_index = days_since_anchor + anchor.@"o'eaiā".time.yearDayIndex();
 
         // future
         while (day_index >= daysInYear(year)) {
@@ -175,9 +175,9 @@ pub const YearMonthDay = struct {
     }
 
     pub fn toGregorianEpochDay(self: YearMonthDay) epoch.EpochDay {
-        const offset_from_anchor = self.totalDays() - anchor.@"o'eaiaa".time.totalDays();
+        const offset_from_anchor = self.totalDays() - anchor.@"o'eaiā".time.totalDays();
 
-        return .{ .day = @intCast(anchor.@"o'eaiaa".days_from_epoch_to_point + offset_from_anchor) };
+        return .{ .day = @intCast(anchor.@"o'eaiā".days_from_epoch_to_point + offset_from_anchor) };
     }
 
     pub fn totalDays(self: YearMonthDay) i48 {

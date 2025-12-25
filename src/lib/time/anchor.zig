@@ -20,7 +20,7 @@ pub const martian = struct {
     pub const time: epoch_martian.YearDay = .{ .year = 64, .day_index = 80 - 1 }; // -1 for day -> index
 };
 // Source: https://discord.com/channels/1284943477984989258/1289355465658204210/1356181925857071126
-pub const @"o'eaiaa" = struct {
+pub const @"o'eaiā" = struct {
     // calculated from our anchor point (Oct 30th 2106)
     pub const days_from_epoch_to_point = 49_975;
 
