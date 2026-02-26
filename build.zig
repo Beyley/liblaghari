@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
 
     const dvui_dep = b.dependency("dvui", .{ .target = target, .optimize = optimize, .backend = .sdl3 });
 
-    const lib_mod = b.createModule(.{
+    const lib_mod = b.addModule("laghari", .{
         .root_source_file = b.path("src/lib/root.zig"),
         .target = target,
         .optimize = optimize,

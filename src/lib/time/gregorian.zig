@@ -114,6 +114,12 @@ pub const YearMonthDay = struct {
         return epoch_day;
     }
 
+    pub fn toEpochSeconds(self: YearMonthDay) epoch.EpochSeconds {
+        return .{
+            .secs = @as(u64, self.toEpochDay().day) * std.time.epoch.secs_per_day,
+        };
+    }
+
     pub fn monthStart(self: YearMonthDay) YearMonthDay {
         return .{
             .year = self.year,
